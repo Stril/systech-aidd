@@ -1,0 +1,103 @@
+---
+alwaysApply: true
+---
+
+# Правила разработки кода
+
+> **Полное техническое видение проекта:** см. [vision.md](/docs/vision.md)
+
+## Основные принципы
+
+- **KISS** - максимальная простота, никакого оверинжиниринга
+- **1 класс = 1 файл** - строгое соблюдение
+- **Single Responsibility** - каждый класс отвечает за одну задачу
+- **Explicit > Implicit** - явность лучше неявности
+- **Fail Fast** - быстрое обнаружение ошибок
+
+## Структура кода
+
+### Организация файлов
+- Весь код в `src/` без группировок и подпапок
+- Один класс на файл, имя файла = snake_case имени класса
+- `main.py` - единственная точка входа
+
+### Именование
+- Классы: `PascalCase` (TelegramBot, OpenAIClient)
+- Файлы: `snake_case.py` (telegram_bot.py, openai_client.py)
+- Методы и функции: `snake_case()`
+- Константы: `UPPER_SNAKE_CASE`
+
+## Код
+
+### Типизация
+```python
+# Обязательно type hints для всех публичных методов
+def send_message(self, messages: List[Message], system_prompt: str) -> str:
+    pass
+```
+
+### Dependency Injection
+```python
+# Простая инъекция зависимостей через конструктор
+class MessageHandler:
+    def __init__(self, context_manager: ContextManager, openai_client: OpenAIClient):
+        self._context_manager = context_manager
+        self._openai_client = openai_client
+```
+
+### Обработка ошибок
+```python
+# Локальная обработка в каждом классе + логирование
+try:
+    response = self._api_call()
+except APIError as e:
+    logger.error(f"api_error|error={str(e)}|user_id={user_id}")
+    raise
+```
+
+## Логирование
+
+- **structlog** с текстовым форматом и разделителем `|`
+- Файлы по дням: `logs/YYYY-MM-DD.log`
+- Контекст в каждом логе: `user_id`, `chat_id`, `timestamp`
+- НЕ логировать секреты и токены
+
+```python
+logger.info("user_message|user_id=123|chat_id=456|message=Hello")
+logger.error("llm_error|error=API timeout|user_id=123")
+```
+
+## Конфигурация
+
+- Все настройки через `.env` файл
+- Класс `Settings` для валидации через pydantic
+- Обязательные параметры без значений по умолчанию
+- Секреты только в `.env`, НЕ в коде
+
+## Зависимости
+
+- **Минимум зависимостей** - только необходимые
+- Управление через `uv` и `pyproject.toml`
+- Обязательные: openai, aiogram, pydantic, python-dotenv, structlog
+- Для разработки: pytest
+
+## Что НЕ делать
+
+❌ Создавать папки/модули внутри `src/`  
+❌ Более одного класса в файле  
+❌ Сложные паттерны и абстракции  
+❌ Глобальные переменные (кроме логгера)  
+❌ Хардкодить конфигурацию  
+❌ Использовать БД (на данном этапе - только in-memory)  
+
+## Тестирование
+
+- Простые unit-тесты через pytest
+- Только для основных компонентов
+- Минимальное покрытие без избыточности
+- Запуск: `make test`
+
+---
+
+**Помни**: простота > сложность. Если есть сомнения - выбирай более простое решение.
+
