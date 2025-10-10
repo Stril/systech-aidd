@@ -1,9 +1,12 @@
 """Message handler for processing bot commands"""
 import logging
 from typing import Optional
+from datetime import datetime
 from aiogram.types import Message
 from src.openai_client import OpenAIClient
 from src.context_manager import ContextManager
+from src.memory_storage import MemoryStorage
+from src.models import User, Message as StorageMessage
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +18,8 @@ class MessageHandler:
         self, 
         openai_client: Optional[OpenAIClient] = None, 
         system_prompt: str = "",
-        context_manager: Optional[ContextManager] = None
+        context_manager: Optional[ContextManager] = None,
+        storage: Optional[MemoryStorage] = None
     ):
         """Initialize message handler
         
@@ -23,10 +27,12 @@ class MessageHandler:
             openai_client: OpenAI client for LLM interactions (optional for now)
             system_prompt: System prompt for LLM
             context_manager: Context manager for conversation history
+            storage: Memory storage for users and conversations
         """
         self._openai_client = openai_client
         self._system_prompt = system_prompt
         self._context_manager = context_manager
+        self._storage = storage
     
     async def handle_start(self, message: Message) -> None:
         """Handle /start command
@@ -36,8 +42,21 @@ class MessageHandler:
         """
         user_id = message.from_user.id if message.from_user else 0
         username = message.from_user.username if message.from_user else "Unknown"
+        first_name = message.from_user.first_name if message.from_user else None
         
         logger.info(f"user_command|user_id={user_id}|username={username}|command=start")
+        
+        # Save user to storage
+        if self._storage and user_id != 0:
+            if not self._storage.user_exists(user_id):
+                user = User(
+                    user_id=user_id,
+                    username=username if username != "Unknown" else None,
+                    first_name=first_name,
+                    created_at=datetime.now(),
+                    message_count=0
+                )
+                self._storage.add_user(user)
         
         welcome_text = (
             "👋 Привет! Я LLM-бот помощник.\n\n"
@@ -92,6 +111,17 @@ class MessageHandler:
             # Fallback to single message if no context manager
             messages = [{"role": "user", "content": text}]
         
+        # Save user message to storage
+        if self._storage and user_id != 0:
+            user_msg = StorageMessage(
+                user_id=user_id,
+                role="user",
+                content=text,
+                timestamp=datetime.now()
+            )
+            self._storage.add_message_to_conversation(user_id, user_msg)
+            self._storage.increment_user_message_count(user_id)
+        
         try:
             # Send typing action
             await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
@@ -102,6 +132,16 @@ class MessageHandler:
             # Add assistant response to context
             if self._context_manager:
                 self._context_manager.add_message(user_id, "assistant", response)
+            
+            # Save assistant response to storage
+            if self._storage and user_id != 0:
+                assistant_msg = StorageMessage(
+                    user_id=user_id,
+                    role="assistant",
+                    content=response,
+                    timestamp=datetime.now()
+                )
+                self._storage.add_message_to_conversation(user_id, assistant_msg)
             
             # Send response to user
             await message.answer(response)
@@ -126,8 +166,15 @@ class MessageHandler:
         
         logger.info(f"user_command|user_id={user_id}|username={username}|command=reset")
         
+        # Clear context manager
         if self._context_manager:
             self._context_manager.reset_context(user_id)
+        
+        # Clear storage conversation
+        if self._storage and user_id != 0:
+            self._storage.clear_conversation(user_id)
+        
+        if self._context_manager or self._storage:
             await message.answer("🔄 История диалога очищена. Начнем сначала!")
         else:
             await message.answer("⚠️ Управление контекстом не настроено.")

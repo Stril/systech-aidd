@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 from src.message_handler import MessageHandler
 from src.openai_client import OpenAIClient
 from src.context_manager import ContextManager
+from src.memory_storage import MemoryStorage
 
 
 @pytest.fixture
@@ -25,12 +26,25 @@ def mock_context_manager():
 
 
 @pytest.fixture
-def message_handler(mock_openai_client, mock_context_manager):
+def mock_storage():
+    """Fixture for mock MemoryStorage"""
+    storage = Mock(spec=MemoryStorage)
+    storage.user_exists = Mock(return_value=False)
+    storage.add_user = Mock()
+    storage.add_message_to_conversation = Mock()
+    storage.increment_user_message_count = Mock()
+    storage.clear_conversation = Mock()
+    return storage
+
+
+@pytest.fixture
+def message_handler(mock_openai_client, mock_context_manager, mock_storage):
     """Fixture for MessageHandler instance"""
     return MessageHandler(
         openai_client=mock_openai_client,
         system_prompt="Test system prompt",
-        context_manager=mock_context_manager
+        context_manager=mock_context_manager,
+        storage=mock_storage
     )
 
 
@@ -263,4 +277,85 @@ async def test_handle_text_message_without_context_manager(mock_openai_client):
     
     # Verify response was sent
     message.answer.assert_called_once_with("Test response from LLM")
+
+
+async def test_handle_start_saves_user_to_storage(mock_storage):
+    """Test that /start saves new user to storage"""
+    handler = MessageHandler(
+        openai_client=None,
+        system_prompt="Test",
+        context_manager=None,
+        storage=mock_storage
+    )
+    
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.from_user.first_name = "Test"
+    message.answer = AsyncMock()
+    
+    await handler.handle_start(message)
+    
+    # Verify storage was checked for user
+    mock_storage.user_exists.assert_called_once_with(12345)
+    
+    # Verify user was added to storage
+    mock_storage.add_user.assert_called_once()
+    call_args = mock_storage.add_user.call_args[0][0]
+    assert call_args.user_id == 12345
+    assert call_args.username == "testuser"
+    assert call_args.first_name == "Test"
+
+
+async def test_handle_text_message_saves_to_storage(message_handler, mock_openai_client, 
+                                                     mock_context_manager, mock_storage):
+    """Test that text messages are saved to storage"""
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.text = "Hello bot"
+    message.chat = MagicMock()
+    message.chat.id = 67890
+    message.bot = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_text_message(message)
+    
+    # Verify user message was saved to storage (2 calls: user + assistant)
+    assert mock_storage.add_message_to_conversation.call_count == 2
+    
+    # Verify user message count was incremented
+    mock_storage.increment_user_message_count.assert_called_once_with(12345)
+    
+    # Check first call (user message)
+    first_call = mock_storage.add_message_to_conversation.call_args_list[0]
+    assert first_call[0][0] == 12345  # user_id
+    assert first_call[0][1].role == "user"
+    assert first_call[0][1].content == "Hello bot"
+    
+    # Check second call (assistant message)
+    second_call = mock_storage.add_message_to_conversation.call_args_list[1]
+    assert second_call[0][0] == 12345  # user_id
+    assert second_call[0][1].role == "assistant"
+    assert second_call[0][1].content == "Test response from LLM"
+
+
+async def test_handle_reset_clears_storage(message_handler, mock_context_manager, mock_storage):
+    """Test that /reset clears storage conversation"""
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_reset(message)
+    
+    # Verify context manager was reset
+    mock_context_manager.reset_context.assert_called_once_with(12345)
+    
+    # Verify storage conversation was cleared
+    mock_storage.clear_conversation.assert_called_once_with(12345)
 

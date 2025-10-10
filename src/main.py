@@ -7,6 +7,7 @@ from src.telegram_bot import TelegramBot
 from src.message_handler import MessageHandler
 from src.openai_client import OpenAIClient
 from src.context_manager import ContextManager
+from src.memory_storage import MemoryStorage
 
 
 def setup_logging(log_level: str) -> None:
@@ -46,13 +47,20 @@ async def main() -> None:
         # Initialize context manager
         context_manager = ContextManager(max_messages=10)
         
+        # Initialize memory storage
+        storage = MemoryStorage()
+        
         # Initialize components
         message_handler = MessageHandler(
             openai_client=openai_client,
             system_prompt=settings.DEFAULT_SYSTEM_PROMPT,
-            context_manager=context_manager
+            context_manager=context_manager,
+            storage=storage
         )
         bot = TelegramBot(settings.TELEGRAM_BOT_TOKEN, message_handler)
+        
+        # Log initial metrics
+        logger.info(f"application|metrics|users={storage.get_total_users()}|messages={storage.get_total_messages()}")
         
         # Start bot
         logger.info("application|status=bot_starting")
