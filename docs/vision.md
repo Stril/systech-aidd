@@ -90,6 +90,7 @@ systech-aidd-1/
 
 2. Обработка запроса:
    MessageHandler → ContextManager (читает из MemoryStorage)
+   ContextManager → MemoryStorage (читает/пишет историю)
    ContextManager → OpenAIClient → Openrouter LLM
 
 3. Сохранение и отправка:
