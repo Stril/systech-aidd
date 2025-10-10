@@ -85,11 +85,16 @@ systech-aidd-1/
 
 ### Поток данных:
 ```
-Пользователь → Telegram → MessageHandler → ContextManager → OpenAIClient → LLM
-                ↓
-            MemoryStorage ← ContextManager ← OpenAIClient ← LLM Response
-                ↓
-            TelegramBot → Пользователь
+1. Получение сообщения:
+   Telegram API → TelegramBot → MessageHandler
+
+2. Обработка запроса:
+   MessageHandler → ContextManager (читает из MemoryStorage)
+   ContextManager → OpenAIClient → Openrouter LLM
+
+3. Сохранение и отправка:
+   LLM Response → ContextManager (пишет в MemoryStorage)
+   ContextManager → MessageHandler → TelegramBot → Telegram API
 ```
 
 ### Принципы архитектуры:
