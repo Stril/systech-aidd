@@ -4,10 +4,15 @@ from pydantic import ValidationError
 from src.settings import Settings
 
 
-def test_settings_with_valid_tokens(monkeypatch):
+def test_settings_with_valid_tokens(monkeypatch, tmp_path):
     """Test Settings initialization with valid tokens"""
+    # Create temp .env to isolate from real .env
+    env_file = tmp_path / ".env"
+    env_file.write_text("TELEGRAM_BOT_TOKEN=test_telegram_token\nOPENAI_API_KEY=test_openai_key\n")
+    
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_telegram_token")
     monkeypatch.setenv("OPENAI_API_KEY", "test_openai_key")
+    monkeypatch.chdir(tmp_path)
     
     settings = Settings()
     
@@ -50,11 +55,16 @@ def test_settings_missing_telegram_token(monkeypatch, tmp_path):
         Settings()
 
 
-def test_settings_missing_openai_key(monkeypatch):
+def test_settings_missing_openai_key(monkeypatch, tmp_path):
     """Test Settings fails without required OpenAI key"""
+    # Create temp .env with only Telegram token
+    env_file = tmp_path / ".env"
+    env_file.write_text("TELEGRAM_BOT_TOKEN=test_token\n")
+    
     # Remove OpenAI key if exists
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_token")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
     
     with pytest.raises(ValidationError):
         Settings()
