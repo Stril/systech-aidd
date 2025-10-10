@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 from aiogram.types import Message
 from src.openai_client import OpenAIClient
+from src.context_manager import ContextManager
 
 logger = logging.getLogger(__name__)
 
@@ -10,15 +11,22 @@ logger = logging.getLogger(__name__)
 class MessageHandler:
     """Handles incoming messages and commands from users"""
     
-    def __init__(self, openai_client: Optional[OpenAIClient] = None, system_prompt: str = ""):
+    def __init__(
+        self, 
+        openai_client: Optional[OpenAIClient] = None, 
+        system_prompt: str = "",
+        context_manager: Optional[ContextManager] = None
+    ):
         """Initialize message handler
         
         Args:
             openai_client: OpenAI client for LLM interactions (optional for now)
             system_prompt: System prompt for LLM
+            context_manager: Context manager for conversation history
         """
         self._openai_client = openai_client
         self._system_prompt = system_prompt
+        self._context_manager = context_manager
     
     async def handle_start(self, message: Message) -> None:
         """Handle /start command
@@ -53,7 +61,8 @@ class MessageHandler:
         help_text = (
             "📚 Доступные команды:\n\n"
             "/start - Начать работу с ботом\n"
-            "/help - Показать эту справку\n\n"
+            "/help - Показать эту справку\n"
+            "/reset - Очистить историю диалога\n\n"
             "Просто отправьте мне сообщение, и я постараюсь помочь!"
         )
         
@@ -75,8 +84,13 @@ class MessageHandler:
         
         logger.info(f"user_text_message|user_id={user_id}|username={username}|message_length={len(text)}")
         
-        # Simple request to LLM (without context for now)
-        messages = [{"role": "user", "content": text}]
+        # Add user message to context
+        if self._context_manager:
+            self._context_manager.add_message(user_id, "user", text)
+            messages = self._context_manager.get_context(user_id)
+        else:
+            # Fallback to single message if no context manager
+            messages = [{"role": "user", "content": text}]
         
         try:
             # Send typing action
@@ -84,6 +98,10 @@ class MessageHandler:
             
             # Get response from LLM
             response = self._openai_client.send_message(messages, self._system_prompt)
+            
+            # Add assistant response to context
+            if self._context_manager:
+                self._context_manager.add_message(user_id, "assistant", response)
             
             # Send response to user
             await message.answer(response)
@@ -96,4 +114,21 @@ class MessageHandler:
                 "😔 Извините, произошла ошибка при обработке вашего сообщения. "
                 "Пожалуйста, попробуйте позже."
             )
+    
+    async def handle_reset(self, message: Message) -> None:
+        """Handle /reset command - clear conversation history
+        
+        Args:
+            message: Incoming Telegram message
+        """
+        user_id = message.from_user.id if message.from_user else 0
+        username = message.from_user.username if message.from_user else "Unknown"
+        
+        logger.info(f"user_command|user_id={user_id}|username={username}|command=reset")
+        
+        if self._context_manager:
+            self._context_manager.reset_context(user_id)
+            await message.answer("🔄 История диалога очищена. Начнем сначала!")
+        else:
+            await message.answer("⚠️ Управление контекстом не настроено.")
 
