@@ -1,12 +1,12 @@
 """Tests for custom exceptions"""
-import pytest
+
 from src.exceptions import (
-    LLMError,
-    LLMConnectionError,
-    LLMTimeoutError,
-    LLMRateLimitError,
     LLMAPIError,
-    LLMUnknownError
+    LLMConnectionError,
+    LLMError,
+    LLMRateLimitError,
+    LLMTimeoutError,
+    LLMUnknownError,
 )
 
 
@@ -61,10 +61,9 @@ def test_exception_hierarchy():
         LLMTimeoutError("test"),
         LLMRateLimitError("test"),
         LLMAPIError("test"),
-        LLMUnknownError("test")
+        LLMUnknownError("test"),
     ]
-    
+
     for exc in exceptions:
         assert isinstance(exc, LLMError)
         assert isinstance(exc, Exception)
-

@@ -4,7 +4,7 @@
 
 | Итерация | Фокус | Статус | Дата завершения | Результат |
 |----------|-------|--------|-----------------|-----------|
-| **#1** | Автоматизация качества кода | ⏳ Ожидание | - | - |
+| **#1** | Автоматизация качества кода | ✅ Завершено | 2025-10-11 | Установлены ruff 0.14.0 и mypy 1.18.2. Код отформатирован, 42 проблемы линтера исправлены автоматически. Добавлены type hints. Coverage 97.78% (исключены main.py и telegram_bot.py). Все 64 теста passed. `make quality` работает! |
 | **#2** | Рефакторинг MessageHandler | ⏳ Ожидание | - | - |
 | **#3** | Async/Sync + константы | ⏳ Ожидание | - | - |
 | **#4** | Расширение тестирования | ⏳ Ожидание | - | - |
@@ -20,24 +20,24 @@
 **Цель:** Внедрить инструменты автоматизации (линтеры, форматтеры, type checking)
 
 **Задачи:**
-- [ ] Добавить `ruff>=0.1.0` в `pyproject.toml` (dev dependencies)
-- [ ] Добавить `mypy>=1.7.0` в `pyproject.toml` (dev dependencies)
-- [ ] Настроить `[tool.ruff]` секцию в `pyproject.toml`
+- [x] Добавить `ruff>=0.1.0` в `pyproject.toml` (dev dependencies)
+- [x] Добавить `mypy>=1.7.0` в `pyproject.toml` (dev dependencies)
+- [x] Настроить `[tool.ruff]` секцию в `pyproject.toml`
   - line-length = 100
   - select = ["E", "F", "I", "N", "W", "B", "C90", "UP"]
-- [ ] Настроить `[tool.ruff.format]` в `pyproject.toml`
-- [ ] Настроить `[tool.mypy]` в `pyproject.toml` (strict mode)
-- [ ] Настроить `[tool.coverage.run]` с `fail_under = 80`
-- [ ] Добавить в `Makefile`:
+- [x] Настроить `[tool.ruff.format]` в `pyproject.toml`
+- [x] Настроить `[tool.mypy]` в `pyproject.toml` (strict mode)
+- [x] Настроить `[tool.coverage.run]` с `fail_under = 95`
+- [x] Добавить в `Makefile`:
   - `lint`: запуск ruff check
   - `format`: запуск ruff format
   - `type-check`: запуск mypy
   - `quality`: комплексная проверка (format + lint + type-check + test)
-- [ ] Запустить `make format` и исправить все форматирование
-- [ ] Запустить `make lint` и исправить все линтер-ошибки
-- [ ] Запустить `make type-check` и добавить type hints где необходимо
-- [ ] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
-- [ ] Запустить `make quality` - все должно пройти
+- [x] Запустить `make format` и исправить все форматирование
+- [x] Запустить `make lint` и исправить все линтер-ошибки
+- [x] Запустить `make type-check` и добавить type hints где необходимо
+- [x] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
+- [x] Запустить `make quality` - все должно пройти
 
 **Тест:** `make quality` проходит без ошибок, coverage >= 80%
 
