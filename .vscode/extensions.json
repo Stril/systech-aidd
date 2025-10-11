@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    // Python разработка
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+
+    // Ruff - форматирование и линтинг
+    "charliermarsh.ruff",
+
+    // Тестирование
+    "littlefoxteam.vscode-python-test-adapter",
+
+    // Дополнительные инструменты
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "eamodio.gitlens"
+  ]
+}
+

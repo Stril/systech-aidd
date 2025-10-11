@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Workflow разработки
 
 > Инструкция для кодового ассистента по разработке LLM Telegram-бота

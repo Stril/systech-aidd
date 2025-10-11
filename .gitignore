@@ -27,7 +27,6 @@ ENV/
 env/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -45,6 +44,7 @@ logs/
 .coverage
 htmlcov/
 .tox/
+.hypothesis/
 
 # UV
 .uv/
