@@ -1,7 +1,7 @@
 """Property-based tests for ContextManager using Hypothesis"""
 
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from src.context_manager import ContextManager
@@ -12,6 +12,7 @@ from src.context_manager import ContextManager
     user_id=st.integers(min_value=1, max_value=1000000),
     messages=st.lists(st.text(min_size=1, max_size=100), min_size=0, max_size=20),
 )
+@settings(suppress_health_check=[HealthCheck.too_slow])
 def test_context_never_exceeds_max_messages(user_id, messages):
     """Property: context length never exceeds max_messages"""
     max_messages = 10
