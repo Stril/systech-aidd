@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # OpenRouter/LLM
     OPENAI_API_KEY: str
     OPENAI_BASE_URL: str = "https://openrouter.ai/api/v1"
-    OPENAI_MODEL: str = "openai/gpt-3.5-turbo"
+    OPENAI_MODEL: str = "openai/gpt-oss-20b:free"
     
     # System
     LOG_LEVEL: str = "INFO"

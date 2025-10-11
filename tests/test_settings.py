@@ -20,7 +20,7 @@ def test_settings_with_valid_tokens(monkeypatch, tmp_path):
     assert settings.OPENAI_API_KEY == "test_openai_key"
     assert settings.LOG_LEVEL == "INFO"  # Default value
     assert settings.OPENAI_BASE_URL == "https://openrouter.ai/api/v1"  # Default
-    assert settings.OPENAI_MODEL == "openai/gpt-3.5-turbo"  # Default
+    assert settings.OPENAI_MODEL == "openai/gpt-oss-20b:free"  # Default
 
 
 def test_settings_with_custom_values(monkeypatch):
