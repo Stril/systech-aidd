@@ -12,9 +12,24 @@ install-dev:
 run:
 	uv run python src/main.py
 
-# Запуск тестов в виртуальном окружении
+# Запуск всех тестов
 test:
 	uv run pytest tests/ -v
+
+# Запуск только unit-тестов
+test-unit:
+	uv run pytest tests/ -v -m unit
+
+# Запуск только интеграционных тестов
+test-integration:
+	uv run pytest tests/ -v -m integration
+
+# Запуск только property-based тестов
+test-property:
+	uv run pytest tests/ -v -m property
+
+# Запуск всех тестов (альтернативное имя)
+test-all: test
 
 # Запуск тестов с покрытием
 test-cov:

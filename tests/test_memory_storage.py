@@ -2,10 +2,13 @@
 
 from datetime import datetime
 
+import pytest
+
 from src.memory_storage import MemoryStorage
 from src.models import Message, User
 
 
+@pytest.mark.unit
 def test_memory_storage_initialization():
     """Test MemoryStorage initialization"""
     storage = MemoryStorage()
@@ -13,6 +16,7 @@ def test_memory_storage_initialization():
     assert storage.get_total_messages() == 0
 
 
+@pytest.mark.unit
 def test_add_user():
     """Test adding a user"""
     storage = MemoryStorage()
@@ -23,6 +27,7 @@ def test_add_user():
     assert storage.get_total_users() == 1
 
 
+@pytest.mark.unit
 def test_get_user():
     """Test getting a user"""
     storage = MemoryStorage()
@@ -36,6 +41,7 @@ def test_get_user():
     assert retrieved_user.username == "testuser"
 
 
+@pytest.mark.unit
 def test_get_nonexistent_user():
     """Test getting a user that doesn't exist"""
     storage = MemoryStorage()
@@ -43,6 +49,7 @@ def test_get_nonexistent_user():
     assert user is None
 
 
+@pytest.mark.unit
 def test_update_user():
     """Test updating an existing user"""
     storage = MemoryStorage()
@@ -73,6 +80,7 @@ def test_update_user():
     assert storage.get_total_users() == 1  # Should not create duplicate
 
 
+@pytest.mark.unit
 def test_get_all_users():
     """Test getting all users"""
     storage = MemoryStorage()
@@ -88,6 +96,7 @@ def test_get_all_users():
     assert all(isinstance(u, User) for u in all_users)
 
 
+@pytest.mark.unit
 def test_increment_user_message_count():
     """Test incrementing user message count"""
     storage = MemoryStorage()
@@ -109,6 +118,7 @@ def test_increment_user_message_count():
     assert retrieved.message_count == 3
 
 
+@pytest.mark.unit
 def test_add_message_to_conversation():
     """Test adding a message to conversation"""
     storage = MemoryStorage()
@@ -123,6 +133,7 @@ def test_add_message_to_conversation():
     assert conversation.messages[0].content == "Hello"
 
 
+@pytest.mark.unit
 def test_add_multiple_messages_to_conversation():
     """Test adding multiple messages to conversation"""
     storage = MemoryStorage()
@@ -141,6 +152,7 @@ def test_add_multiple_messages_to_conversation():
     assert len(conversation.messages) == 3
 
 
+@pytest.mark.unit
 def test_get_nonexistent_conversation():
     """Test getting a conversation that doesn't exist"""
     storage = MemoryStorage()
@@ -148,6 +160,7 @@ def test_get_nonexistent_conversation():
     assert conversation is None
 
 
+@pytest.mark.unit
 def test_clear_conversation():
     """Test clearing a conversation"""
     storage = MemoryStorage()
@@ -167,6 +180,7 @@ def test_clear_conversation():
     assert conversation.get_message_count() == 0
 
 
+@pytest.mark.unit
 def test_clear_nonexistent_conversation():
     """Test clearing a conversation that doesn't exist"""
     storage = MemoryStorage()
@@ -174,6 +188,7 @@ def test_clear_nonexistent_conversation():
     storage.clear_conversation(999)
 
 
+@pytest.mark.unit
 def test_multiple_users_separate_conversations():
     """Test that different users have separate conversations"""
     storage = MemoryStorage()
@@ -190,6 +205,7 @@ def test_multiple_users_separate_conversations():
     assert conv_456.messages[0].content == "User 456"
 
 
+@pytest.mark.unit
 def test_get_total_messages():
     """Test getting total messages across all users"""
     storage = MemoryStorage()
@@ -205,6 +221,7 @@ def test_get_total_messages():
     assert storage.get_total_messages() == 5
 
 
+@pytest.mark.unit
 def test_get_metrics():
     """Test getting all metrics"""
     storage = MemoryStorage()

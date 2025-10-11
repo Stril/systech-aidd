@@ -133,9 +133,9 @@ alwaysApply: false
 ## Тестирование
 
 ### Требования к тестам
-- **Покрытие**: минимум 80%, цель 85%+
+- **Покрытие**: минимум 80%, цель 85%+, текущий результат: **98%+**
 - **Типы тестов**: unit, integration, property-based
-- **Фреймворк**: pytest + pytest-asyncio + pytest-cov
+- **Фреймворк**: pytest + pytest-asyncio + pytest-cov + hypothesis
 - **Моки**: 
   - `Mock` для синхронных методов
   - `AsyncMock` для async методов (обязательно!)
@@ -143,14 +143,23 @@ alwaysApply: false
 
 ### Категории тестов
 - **Unit тесты**: `@pytest.mark.unit` - тестирование отдельных компонентов
+  - Все существующие компоненты покрыты unit-тестами
+  - Включая `TelegramBot` (9 тестов)
 - **Интеграционные тесты**: `@pytest.mark.integration` - тестирование взаимодействия компонентов
+  - Полный поток: message → handler → llm → storage
+  - Сценарии с ошибками
+  - Команда /reset
 - **Property-based тесты**: `@pytest.mark.property` - тестирование инвариантов с Hypothesis
+  - Проверка инвариантов `ContextManager`
+  - Автоматическая генерация тестовых данных
+  - Проверка edge cases
 
 ### Команды тестирования
-- `make test` - все тесты с coverage
-- `make test-unit` - только unit-тесты
-- `make test-integration` - только интеграционные
-- `make test-property` - только property-based
+- `make test` или `make test-all` - все тесты
+- `make test-unit` - только unit-тесты (маркер @pytest.mark.unit)
+- `make test-integration` - только интеграционные тесты (маркер @pytest.mark.integration)
+- `make test-property` - только property-based тесты (маркер @pytest.mark.property)
+- `make test-cov` - все тесты с отчетом coverage
 
 ## Лучшие практики Python
 

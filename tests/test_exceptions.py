@@ -1,5 +1,7 @@
 """Tests for custom exceptions"""
 
+import pytest
+
 from src.exceptions import (
     LLMAPIError,
     LLMConnectionError,
@@ -10,6 +12,7 @@ from src.exceptions import (
 )
 
 
+@pytest.mark.unit
 def test_llm_error_base():
     """Test LLMError base exception"""
     error = LLMError("Test error")
@@ -17,6 +20,7 @@ def test_llm_error_base():
     assert isinstance(error, Exception)
 
 
+@pytest.mark.unit
 def test_llm_connection_error():
     """Test LLMConnectionError"""
     error = LLMConnectionError("Connection failed")
@@ -25,6 +29,7 @@ def test_llm_connection_error():
     assert isinstance(error, Exception)
 
 
+@pytest.mark.unit
 def test_llm_timeout_error():
     """Test LLMTimeoutError"""
     error = LLMTimeoutError("Request timeout")
@@ -32,6 +37,7 @@ def test_llm_timeout_error():
     assert isinstance(error, LLMError)
 
 
+@pytest.mark.unit
 def test_llm_rate_limit_error():
     """Test LLMRateLimitError"""
     error = LLMRateLimitError("Rate limit exceeded")
@@ -39,6 +45,7 @@ def test_llm_rate_limit_error():
     assert isinstance(error, LLMError)
 
 
+@pytest.mark.unit
 def test_llm_api_error():
     """Test LLMAPIError"""
     error = LLMAPIError("API error")
@@ -46,6 +53,7 @@ def test_llm_api_error():
     assert isinstance(error, LLMError)
 
 
+@pytest.mark.unit
 def test_llm_unknown_error():
     """Test LLMUnknownError"""
     error = LLMUnknownError("Unknown error")
@@ -53,6 +61,7 @@ def test_llm_unknown_error():
     assert isinstance(error, LLMError)
 
 
+@pytest.mark.unit
 def test_exception_hierarchy():
     """Test exception hierarchy"""
     # All LLM exceptions should be catchable by LLMError

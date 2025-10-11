@@ -2,9 +2,12 @@
 
 from unittest.mock import Mock
 
+import pytest
+
 from src.message_extractor import MessageContext, MessageExtractor
 
 
+@pytest.mark.unit
 def test_message_extractor_with_full_data():
     """Test extracting message with all data present"""
     # Arrange
@@ -29,6 +32,7 @@ def test_message_extractor_with_full_data():
     assert context.chat_id == 456
 
 
+@pytest.mark.unit
 def test_message_extractor_without_user():
     """Test extracting message without user data"""
     # Arrange
@@ -49,6 +53,7 @@ def test_message_extractor_without_user():
     assert context.chat_id == 789
 
 
+@pytest.mark.unit
 def test_message_extractor_without_username():
     """Test extracting message without username"""
     # Arrange
@@ -71,6 +76,7 @@ def test_message_extractor_without_username():
     assert context.text == "Hi"
 
 
+@pytest.mark.unit
 def test_message_extractor_empty_text():
     """Test extracting message with empty text"""
     # Arrange
@@ -90,6 +96,7 @@ def test_message_extractor_empty_text():
     assert context.text == ""
 
 
+@pytest.mark.unit
 def test_message_context_repr():
     """Test MessageContext string representation"""
     # Arrange

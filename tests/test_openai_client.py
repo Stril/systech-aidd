@@ -27,6 +27,7 @@ def mock_openai_response():
     return mock_response
 
 
+@pytest.mark.unit
 def test_openai_client_initialization():
     """Test OpenAIClient initializes correctly"""
     client = OpenAIClient(
@@ -37,6 +38,7 @@ def test_openai_client_initialization():
     assert client._client is not None
 
 
+@pytest.mark.unit
 def test_sync_send_message_success(mock_openai_response):
     """Test successful message sending (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -61,6 +63,7 @@ def test_sync_send_message_success(mock_openai_response):
 
 
 @pytest.mark.asyncio
+@pytest.mark.unit
 async def test_send_message_success(mock_openai_response):
     """Test successful message sending (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -85,6 +88,7 @@ async def test_send_message_success(mock_openai_response):
 
 
 @pytest.mark.asyncio
+@pytest.mark.unit
 async def test_send_message_with_multiple_messages(mock_openai_response):
     """Test sending multiple messages (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -106,6 +110,7 @@ async def test_send_message_with_multiple_messages(mock_openai_response):
     assert len(call_args.kwargs["messages"]) == 4  # system + 3 messages
 
 
+@pytest.mark.unit
 def test_sync_send_message_connection_error():
     """Test handling of connection errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -125,6 +130,7 @@ def test_sync_send_message_connection_error():
 
 
 @pytest.mark.asyncio
+@pytest.mark.unit
 async def test_send_message_connection_error():
     """Test handling of connection errors (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -143,6 +149,7 @@ async def test_send_message_connection_error():
     assert "подключиться" in str(exc_info.value)
 
 
+@pytest.mark.unit
 def test_send_message_timeout_error():
     """Test handling of timeout errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -161,6 +168,7 @@ def test_send_message_timeout_error():
     assert "время" in str(exc_info.value).lower()
 
 
+@pytest.mark.unit
 def test_send_message_rate_limit_error():
     """Test handling of rate limit errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -179,6 +187,7 @@ def test_send_message_rate_limit_error():
     assert "лимит" in str(exc_info.value).lower()
 
 
+@pytest.mark.unit
 def test_send_message_api_error():
     """Test handling of generic API errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -197,6 +206,7 @@ def test_send_message_api_error():
     assert "API" in str(exc_info.value)
 
 
+@pytest.mark.unit
 def test_send_message_unknown_error():
     """Test handling of unknown errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
@@ -214,6 +224,7 @@ def test_send_message_unknown_error():
 
 
 @pytest.mark.asyncio
+@pytest.mark.unit
 async def test_send_message_empty_messages(mock_openai_response):
     """Test sending with empty message list (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")

@@ -1,6 +1,9 @@
+import pytest
+
 from src.context_manager import ContextManager
 
 
+@pytest.mark.unit
 def test_context_manager_initialization():
     """Test ContextManager initialization with default and custom values"""
     cm = ContextManager()
@@ -10,6 +13,7 @@ def test_context_manager_initialization():
     assert cm_custom._max_messages == 5
 
 
+@pytest.mark.unit
 def test_add_message_to_new_user():
     """Test adding first message to a new user"""
     cm = ContextManager()
@@ -21,6 +25,7 @@ def test_add_message_to_new_user():
     assert context[0]["content"] == "Hello"
 
 
+@pytest.mark.unit
 def test_add_multiple_messages():
     """Test adding multiple messages to context"""
     cm = ContextManager()
@@ -35,6 +40,7 @@ def test_add_multiple_messages():
     assert context[2]["role"] == "user"
 
 
+@pytest.mark.unit
 def test_context_trimming():
     """Test that context is trimmed to max_messages"""
     cm = ContextManager(max_messages=3)
@@ -51,6 +57,7 @@ def test_context_trimming():
     assert context[2]["content"] == "Message 4"
 
 
+@pytest.mark.unit
 def test_reset_context():
     """Test resetting user's context"""
     cm = ContextManager()
@@ -63,6 +70,7 @@ def test_reset_context():
     assert len(cm.get_context(123)) == 0
 
 
+@pytest.mark.unit
 def test_reset_context_for_nonexistent_user():
     """Test resetting context for user without context"""
     cm = ContextManager()
@@ -71,6 +79,7 @@ def test_reset_context_for_nonexistent_user():
     assert len(cm.get_context(999)) == 0
 
 
+@pytest.mark.unit
 def test_multiple_users_separate_contexts():
     """Test that different users have separate contexts"""
     cm = ContextManager()
@@ -87,6 +96,7 @@ def test_multiple_users_separate_contexts():
     assert context_456[0]["content"] == "User 456 message"
 
 
+@pytest.mark.unit
 def test_get_context_for_new_user():
     """Test getting context for user without any messages"""
     cm = ContextManager()
@@ -94,6 +104,7 @@ def test_get_context_for_new_user():
     assert context == []
 
 
+@pytest.mark.unit
 def test_context_preserves_order():
     """Test that context preserves message order"""
     cm = ContextManager()

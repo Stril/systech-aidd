@@ -7,7 +7,7 @@
 | **#1** | Автоматизация качества кода | ✅ Завершено | 2025-10-11 | Установлены ruff 0.14.0 и mypy 1.18.2. Код отформатирован, 42 проблемы линтера исправлены автоматически. Добавлены type hints. Coverage 97.78% (исключены main.py и telegram_bot.py). Все 64 теста passed. `make quality` работает! |
 | **#2** | Рефакторинг MessageHandler | ✅ Завершено | 2025-10-11 | Созданы MessageExtractor и BotMessages. Устранено дублирование кода (DRY). Все hardcoded строки вынесены в константы. MessageHandler упрощен (-33 строки). Добавлено 24 новых теста. Coverage 97.99%. Все 88 тестов passed. `make quality` работает! |
 | **#3** | Async/Sync + константы | ✅ Завершено | 2025-10-11 | OpenAIClient рефакторинг: создан приватный `_sync_send_message()` и публичный `async send_message()` с `run_in_executor`. MessageHandler обновлен с `await`. Добавлено 2 async теста. Coverage 98.02%. Все 90 тестов passed. `make quality` работает! |
-| **#4** | Расширение тестирования | ⏳ Ожидание | - | - |
+| **#4** | Расширение тестирования | ✅ Завершено | 2025-10-11 | Добавлены hypothesis 6.140.3, pytest markers. Созданы test_telegram_bot.py (9 тестов), test_context_manager_property.py (7 тестов), test_integration.py (5 тестов). Makefile расширен командами test-unit/integration/property. Coverage 98.02%. Всего 111 тестов passed. `make quality` работает! |
 
 **Легенда статусов:**  
 ⏳ Ожидание | 🔄 В работе | ✅ Завершено | ⚠️ Проблемы | ❌ Отменено
@@ -115,31 +115,31 @@
 **Цель:** Добавить интеграционные и property-based тесты
 
 **Задачи:**
-- [ ] Добавить `hypothesis>=6.0.0` в `pyproject.toml` (dev dependencies)
-- [ ] Создать `tests/test_context_manager_property.py`:
+- [x] Добавить `hypothesis>=6.0.0` в `pyproject.toml` (dev dependencies)
+- [x] Создать `tests/test_context_manager_property.py`:
   - Property-based тесты для ContextManager
   - Проверка что контекст никогда не превышает max_messages
   - Проверка инвариантов при различных сценариях
-- [ ] Создать `tests/test_integration.py`:
+- [x] Создать `tests/test_integration.py`:
   - Тест полного потока: message → handler → llm → storage
   - Тест сценария с ошибкой LLM
   - Тест команды /reset с проверкой очистки всех компонентов
-- [ ] Создать `tests/test_telegram_bot.py`:
+- [x] Создать `tests/test_telegram_bot.py`:
   - Тесты для регистрации handlers
   - Тесты для инициализации бота
-- [ ] Настроить pytest markers в `pyproject.toml`:
+- [x] Настроить pytest markers в `pyproject.toml`:
   - `@pytest.mark.unit` для юнит-тестов
   - `@pytest.mark.integration` для интеграционных
   - `@pytest.mark.property` для property-based
-- [ ] Добавить в `Makefile`:
+- [x] Добавить в `Makefile`:
   - `test-unit`: только юнит-тесты
   - `test-integration`: только интеграционные
   - `test-property`: только property-based
   - `test-all`: все тесты (существующий `test`)
-- [ ] Запустить `make test-all` - все тесты должны пройти
-- [ ] Проверить coverage >= 85%
-- [ ] Запустить `make quality` - финальная проверка
-- [ ] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
+- [x] Запустить `make test-all` - все тесты должны пройти
+- [x] Проверить coverage >= 85%
+- [x] Запустить `make quality` - финальная проверка
+- [x] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
 
 **Тест:** Расширенное покрытие тестами, включая интеграционные сценарии
 
@@ -147,7 +147,7 @@
 - ✅ Property-based тесты для критичных компонентов
 - ✅ Интеграционные тесты для основных сценариев
 - ✅ Тесты для TelegramBot
-- ✅ Coverage >= 85%
+- ✅ Coverage >= 85% (достигнуто 98.02%)
 - ✅ Все категории тестов можно запускать отдельно
 
 ---

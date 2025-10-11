@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from src.settings import Settings
 
 
+@pytest.mark.unit
 def test_settings_with_valid_tokens(monkeypatch, tmp_path):
     """Test Settings initialization with valid tokens"""
     # Create temp .env to isolate from real .env
@@ -25,6 +26,7 @@ def test_settings_with_valid_tokens(monkeypatch, tmp_path):
     assert settings.OPENAI_MODEL == "openai/gpt-oss-20b:free"  # Default
 
 
+@pytest.mark.unit
 def test_settings_with_custom_values(monkeypatch):
     """Test Settings with custom values"""
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_telegram_token")
@@ -40,6 +42,7 @@ def test_settings_with_custom_values(monkeypatch):
     assert settings.OPENAI_MODEL == "openai/gpt-4"
 
 
+@pytest.mark.unit
 def test_settings_missing_telegram_token(monkeypatch, tmp_path):
     """Test Settings fails without required Telegram token"""
     # Create empty .env file to prevent reading from actual .env
@@ -57,6 +60,7 @@ def test_settings_missing_telegram_token(monkeypatch, tmp_path):
         Settings()
 
 
+@pytest.mark.unit
 def test_settings_missing_openai_key(monkeypatch, tmp_path):
     """Test Settings fails without required OpenAI key"""
     # Create temp .env with only Telegram token
@@ -72,6 +76,7 @@ def test_settings_missing_openai_key(monkeypatch, tmp_path):
         Settings()
 
 
+@pytest.mark.unit
 def test_settings_case_insensitive(monkeypatch):
     """Test that settings are case-insensitive for environment variables"""
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_telegram_token")
@@ -84,6 +89,7 @@ def test_settings_case_insensitive(monkeypatch):
     assert settings.LOG_LEVEL == "DEBUG"
 
 
+@pytest.mark.unit
 def test_settings_default_system_prompt(monkeypatch):
     """Test that default system prompt is set"""
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_telegram_token")

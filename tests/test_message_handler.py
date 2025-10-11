@@ -63,6 +63,7 @@ def mock_message():
     return message
 
 
+@pytest.mark.unit
 async def test_handle_start_command(message_handler, mock_message):
     """Test /start command handler"""
     await message_handler.handle_start(mock_message)
@@ -77,6 +78,7 @@ async def test_handle_start_command(message_handler, mock_message):
     assert "/help" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_help_command(message_handler, mock_message):
     """Test /help command handler"""
     await message_handler.handle_help(mock_message)
@@ -92,6 +94,7 @@ async def test_handle_help_command(message_handler, mock_message):
     assert "команды" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_start_without_user(message_handler):
     """Test /start command handler when user is None"""
     message = AsyncMock()
@@ -105,6 +108,7 @@ async def test_handle_start_without_user(message_handler):
     message.answer.assert_called_once()
 
 
+@pytest.mark.unit
 async def test_handle_help_without_username(message_handler):
     """Test /help command handler when username is None"""
     message = AsyncMock()
@@ -120,6 +124,7 @@ async def test_handle_help_without_username(message_handler):
     message.answer.assert_called_once()
 
 
+@pytest.mark.unit
 async def test_handle_text_message_success(
     message_handler, mock_openai_client, mock_context_manager
 ):
@@ -153,6 +158,7 @@ async def test_handle_text_message_success(
     message.answer.assert_called_once_with("Test response from LLM")
 
 
+@pytest.mark.unit
 async def test_handle_text_message_without_openai_client():
     """Test text message handling without OpenAI client"""
     handler = MessageHandler(openai_client=None, system_prompt="", context_manager=None)
@@ -168,6 +174,7 @@ async def test_handle_text_message_without_openai_client():
     assert "не настроен" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_text_message_llm_error(
     message_handler, mock_openai_client, mock_context_manager
 ):
@@ -197,6 +204,7 @@ async def test_handle_text_message_llm_error(
     assert "ошибка" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_text_message_empty_text(
     message_handler, mock_openai_client, mock_context_manager
 ):
@@ -221,6 +229,7 @@ async def test_handle_text_message_empty_text(
     mock_openai_client.send_message.assert_called_once()
 
 
+@pytest.mark.unit
 async def test_handle_reset_command(message_handler, mock_context_manager):
     """Test /reset command handler"""
     message = AsyncMock()
@@ -240,6 +249,7 @@ async def test_handle_reset_command(message_handler, mock_context_manager):
     assert "очищена" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_reset_without_context_manager():
     """Test /reset command without context manager"""
     handler = MessageHandler(openai_client=None, system_prompt="", context_manager=None)
@@ -258,6 +268,7 @@ async def test_handle_reset_without_context_manager():
     assert "не настроен" in call_args
 
 
+@pytest.mark.unit
 async def test_handle_text_message_without_context_manager(mock_openai_client):
     """Test text message handling without context manager (fallback mode)"""
     handler = MessageHandler(
@@ -287,6 +298,7 @@ async def test_handle_text_message_without_context_manager(mock_openai_client):
     message.answer.assert_called_once_with("Test response from LLM")
 
 
+@pytest.mark.unit
 async def test_handle_start_saves_user_to_storage(mock_storage):
     """Test that /start saves new user to storage"""
     handler = MessageHandler(
@@ -313,6 +325,7 @@ async def test_handle_start_saves_user_to_storage(mock_storage):
     assert call_args.first_name == "Test"
 
 
+@pytest.mark.unit
 async def test_handle_text_message_saves_to_storage(
     message_handler, mock_openai_client, mock_context_manager, mock_storage
 ):
@@ -349,6 +362,7 @@ async def test_handle_text_message_saves_to_storage(
     assert second_call[0][1].content == "Test response from LLM"
 
 
+@pytest.mark.unit
 async def test_handle_reset_clears_storage(message_handler, mock_context_manager, mock_storage):
     """Test that /reset clears storage conversation"""
     message = AsyncMock()
@@ -366,6 +380,7 @@ async def test_handle_reset_clears_storage(message_handler, mock_context_manager
     mock_storage.clear_conversation.assert_called_once_with(12345)
 
 
+@pytest.mark.unit
 async def test_handle_text_message_connection_error(
     message_handler, mock_openai_client, mock_storage
 ):
@@ -391,6 +406,7 @@ async def test_handle_text_message_connection_error(
     assert "подключиться" in call_args.lower()
 
 
+@pytest.mark.unit
 async def test_handle_text_message_timeout_error(message_handler, mock_openai_client, mock_storage):
     """Test handling of timeout errors"""
     mock_openai_client.send_message = AsyncMock(side_effect=LLMTimeoutError("Timeout"))
@@ -414,6 +430,7 @@ async def test_handle_text_message_timeout_error(message_handler, mock_openai_cl
     assert "время" in call_args.lower() or "таймаут" in call_args.lower()
 
 
+@pytest.mark.unit
 async def test_handle_text_message_rate_limit_error(
     message_handler, mock_openai_client, mock_storage
 ):
@@ -439,6 +456,7 @@ async def test_handle_text_message_rate_limit_error(
     assert "лимит" in call_args.lower()
 
 
+@pytest.mark.unit
 async def test_handle_text_message_api_error(message_handler, mock_openai_client, mock_storage):
     """Test handling of API errors"""
     mock_openai_client.send_message = AsyncMock(side_effect=LLMAPIError("API error"))
