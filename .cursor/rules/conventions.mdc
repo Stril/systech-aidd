@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Правила разработки кода
 
 > **Полное техническое видение проекта:** см. @vision.md
