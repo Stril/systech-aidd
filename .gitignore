@@ -45,6 +45,7 @@ logs/
 .coverage
 htmlcov/
 .tox/
+.hypothesis/
 
 # UV
 .uv/
