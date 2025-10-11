@@ -125,6 +125,10 @@ alwaysApply: false
 - IO операции (сеть, файлы) - всегда async
 - CPU операции - в executor через run_in_executor
 - Не блокировать event loop синхронными вызовами
+- **OpenAI вызовы**: синхронная OpenAI библиотека обернута в async через `run_in_executor`
+  - Приватный метод `_sync_send_message()` содержит синхронную логику
+  - Публичный `async send_message()` выполняет его через executor
+  - Используется `functools.partial` для передачи параметров в executor
 
 ## Тестирование
 
@@ -132,7 +136,10 @@ alwaysApply: false
 - **Покрытие**: минимум 80%, цель 85%+
 - **Типы тестов**: unit, integration, property-based
 - **Фреймворк**: pytest + pytest-asyncio + pytest-cov
-- **Моки**: pytest-mock для изоляции зависимостей
+- **Моки**: 
+  - `Mock` для синхронных методов
+  - `AsyncMock` для async методов (обязательно!)
+  - `MagicMock` для объектов с магическими методами
 
 ### Категории тестов
 - **Unit тесты**: `@pytest.mark.unit` - тестирование отдельных компонентов

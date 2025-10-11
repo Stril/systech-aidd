@@ -120,7 +120,7 @@ class MessageHandler:
                 await message.bot.send_chat_action(chat_id=ctx.chat_id, action="typing")
 
             # Get response from LLM
-            response = self._openai_client.send_message(messages, self._system_prompt)
+            response = await self._openai_client.send_message(messages, self._system_prompt)
 
             # Add assistant response to context
             if self._context_manager:

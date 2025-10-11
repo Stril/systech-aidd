@@ -15,7 +15,7 @@ from src.openai_client import OpenAIClient
 def mock_openai_client():
     """Fixture for mock OpenAI client"""
     client = Mock(spec=OpenAIClient)
-    client.send_message = Mock(return_value="Test response from LLM")
+    client.send_message = AsyncMock(return_value="Test response from LLM")
     return client
 
 
@@ -173,7 +173,7 @@ async def test_handle_text_message_llm_error(
 ):
     """Test text message handling when LLM fails"""
     # Make LLM raise exception
-    mock_openai_client.send_message = Mock(side_effect=Exception("LLM Error"))
+    mock_openai_client.send_message = AsyncMock(side_effect=Exception("LLM Error"))
 
     message = AsyncMock()
     message.from_user = MagicMock()
@@ -370,7 +370,7 @@ async def test_handle_text_message_connection_error(
     message_handler, mock_openai_client, mock_storage
 ):
     """Test handling of connection errors"""
-    mock_openai_client.send_message = Mock(side_effect=LLMConnectionError("Connection failed"))
+    mock_openai_client.send_message = AsyncMock(side_effect=LLMConnectionError("Connection failed"))
 
     message = AsyncMock()
     message.from_user = MagicMock()
@@ -393,7 +393,7 @@ async def test_handle_text_message_connection_error(
 
 async def test_handle_text_message_timeout_error(message_handler, mock_openai_client, mock_storage):
     """Test handling of timeout errors"""
-    mock_openai_client.send_message = Mock(side_effect=LLMTimeoutError("Timeout"))
+    mock_openai_client.send_message = AsyncMock(side_effect=LLMTimeoutError("Timeout"))
 
     message = AsyncMock()
     message.from_user = MagicMock()
@@ -418,7 +418,7 @@ async def test_handle_text_message_rate_limit_error(
     message_handler, mock_openai_client, mock_storage
 ):
     """Test handling of rate limit errors"""
-    mock_openai_client.send_message = Mock(side_effect=LLMRateLimitError("Rate limit"))
+    mock_openai_client.send_message = AsyncMock(side_effect=LLMRateLimitError("Rate limit"))
 
     message = AsyncMock()
     message.from_user = MagicMock()
@@ -441,7 +441,7 @@ async def test_handle_text_message_rate_limit_error(
 
 async def test_handle_text_message_api_error(message_handler, mock_openai_client, mock_storage):
     """Test handling of API errors"""
-    mock_openai_client.send_message = Mock(side_effect=LLMAPIError("API error"))
+    mock_openai_client.send_message = AsyncMock(side_effect=LLMAPIError("API error"))
 
     message = AsyncMock()
     message.from_user = MagicMock()

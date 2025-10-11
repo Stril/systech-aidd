@@ -1,6 +1,8 @@
 """OpenAI client for LLM interactions via OpenRouter"""
 
+import asyncio
 import logging
+from functools import partial
 from typing import Any
 
 import openai
@@ -33,8 +35,8 @@ class OpenAIClient:
 
         logger.info(f"openai_client|status=initialized|model={model}")
 
-    def send_message(self, messages: list[dict[str, Any]], system_prompt: str) -> str:
-        """Send message to LLM and get response
+    def _sync_send_message(self, messages: list[dict[str, Any]], system_prompt: str) -> str:
+        """Synchronous implementation of send_message
 
         Args:
             messages: List of message dicts with 'role' and 'content'
@@ -87,3 +89,28 @@ class OpenAIClient:
         except Exception as e:
             logger.error(f"llm_error|type=unknown|error={str(e)}")
             raise LLMUnknownError(f"Неизвестная ошибка LLM: {str(e)}") from e
+
+    async def send_message(self, messages: list[dict[str, Any]], system_prompt: str) -> str:
+        """Send message to LLM and get response (async version)
+
+        Executes synchronous OpenAI API call in a thread pool to avoid blocking event loop.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            system_prompt: System prompt for the conversation
+
+        Returns:
+            Response text from LLM
+
+        Raises:
+            LLMConnectionError: If cannot connect to LLM service
+            LLMTimeoutError: If request times out
+            LLMRateLimitError: If rate limit is exceeded
+            LLMAPIError: If API returns an error
+            LLMUnknownError: If unknown error occurs
+        """
+        loop = asyncio.get_event_loop()
+        # Execute synchronous operation in thread pool to avoid blocking event loop
+        return await loop.run_in_executor(
+            None, partial(self._sync_send_message, messages, system_prompt)
+        )

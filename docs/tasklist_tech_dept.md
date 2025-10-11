@@ -6,7 +6,7 @@
 |----------|-------|--------|-----------------|-----------|
 | **#1** | Автоматизация качества кода | ✅ Завершено | 2025-10-11 | Установлены ruff 0.14.0 и mypy 1.18.2. Код отформатирован, 42 проблемы линтера исправлены автоматически. Добавлены type hints. Coverage 97.78% (исключены main.py и telegram_bot.py). Все 64 теста passed. `make quality` работает! |
 | **#2** | Рефакторинг MessageHandler | ✅ Завершено | 2025-10-11 | Созданы MessageExtractor и BotMessages. Устранено дублирование кода (DRY). Все hardcoded строки вынесены в константы. MessageHandler упрощен (-33 строки). Добавлено 24 новых теста. Coverage 97.99%. Все 88 тестов passed. `make quality` работает! |
-| **#3** | Async/Sync + константы | ⏳ Ожидание | - | - |
+| **#3** | Async/Sync + константы | ✅ Завершено | 2025-10-11 | OpenAIClient рефакторинг: создан приватный `_sync_send_message()` и публичный `async send_message()` с `run_in_executor`. MessageHandler обновлен с `await`. Добавлено 2 async теста. Coverage 98.02%. Все 90 тестов passed. `make quality` работает! |
 | **#4** | Расширение тестирования | ⏳ Ожидание | - | - |
 
 **Легенда статусов:**  
@@ -85,21 +85,21 @@
 **Цель:** Исправить синхронный вызов OpenAI в async контексте
 
 **Задачи:**
-- [ ] Рефакторить `OpenAIClient`:
+- [x] Рефакторить `OpenAIClient`:
   - Переименовать `send_message()` в `_sync_send_message()`
   - Создать новый async `send_message()` с использованием `run_in_executor`
   - Добавить необходимые импорты (`asyncio`, `functools.partial`)
-- [ ] Обновить вызовы в `MessageHandler`:
+- [x] Обновить вызовы в `MessageHandler`:
   - Изменить `self._openai_client.send_message()` на `await self._openai_client.send_message()`
-- [ ] Обновить тесты `OpenAIClient`:
+- [x] Обновить тесты `OpenAIClient`:
   - Добавить async тесты для нового метода
   - Проверить работу executor
-- [ ] Обновить тесты `MessageHandler`:
+- [x] Обновить тесты `MessageHandler`:
   - Адаптировать моки под async/await
-- [ ] Запустить `make test` - все тесты должны пройти
-- [ ] Запустить `make type-check` - проверить типизацию
-- [ ] Запустить `make quality` - комплексная проверка
-- [ ] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
+- [x] Запустить `make test` - все тесты должны пройти
+- [x] Запустить `make type-check` - проверить типизацию
+- [x] Запустить `make quality` - комплексная проверка
+- [x] Обновить `.cursor/rules/*.mdc` и `docs/vision.md` на соответствие изменениям
 
 **Тест:** OpenAI вызовы асинхронные, не блокируют event loop
 

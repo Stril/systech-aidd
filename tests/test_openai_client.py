@@ -37,8 +37,8 @@ def test_openai_client_initialization():
     assert client._client is not None
 
 
-def test_send_message_success(mock_openai_response):
-    """Test successful message sending"""
+def test_sync_send_message_success(mock_openai_response):
+    """Test successful message sending (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock the API call
@@ -47,7 +47,7 @@ def test_send_message_success(mock_openai_response):
     messages = [{"role": "user", "content": "Hello"}]
     system_prompt = "You are a helpful assistant"
 
-    result = client.send_message(messages, system_prompt)
+    result = client._sync_send_message(messages, system_prompt)
 
     assert result == "This is a test response from LLM"
 
@@ -60,8 +60,33 @@ def test_send_message_success(mock_openai_response):
     assert call_args.kwargs["messages"][1]["role"] == "user"
 
 
-def test_send_message_with_multiple_messages(mock_openai_response):
-    """Test sending multiple messages"""
+@pytest.mark.asyncio
+async def test_send_message_success(mock_openai_response):
+    """Test successful message sending (async version)"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+
+    # Mock the API call
+    client._client.chat.completions.create = Mock(return_value=mock_openai_response)
+
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+
+    result = await client.send_message(messages, system_prompt)
+
+    assert result == "This is a test response from LLM"
+
+    # Verify API was called with correct parameters
+    client._client.chat.completions.create.assert_called_once()
+    call_args = client._client.chat.completions.create.call_args
+    assert call_args.kwargs["model"] == "test-model"
+    assert len(call_args.kwargs["messages"]) == 2  # system + user message
+    assert call_args.kwargs["messages"][0]["role"] == "system"
+    assert call_args.kwargs["messages"][1]["role"] == "user"
+
+
+@pytest.mark.asyncio
+async def test_send_message_with_multiple_messages(mock_openai_response):
+    """Test sending multiple messages (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
     client._client.chat.completions.create = Mock(return_value=mock_openai_response)
 
@@ -72,7 +97,7 @@ def test_send_message_with_multiple_messages(mock_openai_response):
     ]
     system_prompt = "You are a helpful assistant"
 
-    result = client.send_message(messages, system_prompt)
+    result = await client.send_message(messages, system_prompt)
 
     assert result == "This is a test response from LLM"
 
@@ -81,8 +106,8 @@ def test_send_message_with_multiple_messages(mock_openai_response):
     assert len(call_args.kwargs["messages"]) == 4  # system + 3 messages
 
 
-def test_send_message_connection_error():
-    """Test handling of connection errors"""
+def test_sync_send_message_connection_error():
+    """Test handling of connection errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock API to raise connection error
@@ -94,13 +119,32 @@ def test_send_message_connection_error():
     system_prompt = "You are a helpful assistant"
 
     with pytest.raises(LLMConnectionError) as exc_info:
-        client.send_message(messages, system_prompt)
+        client._sync_send_message(messages, system_prompt)
+
+    assert "подключиться" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_send_message_connection_error():
+    """Test handling of connection errors (async version)"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+
+    # Mock API to raise connection error
+    client._client.chat.completions.create = Mock(
+        side_effect=openai.APIConnectionError(request=Mock())
+    )
+
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+
+    with pytest.raises(LLMConnectionError) as exc_info:
+        await client.send_message(messages, system_prompt)
 
     assert "подключиться" in str(exc_info.value)
 
 
 def test_send_message_timeout_error():
-    """Test handling of timeout errors"""
+    """Test handling of timeout errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock API to raise timeout error
@@ -112,13 +156,13 @@ def test_send_message_timeout_error():
     system_prompt = "You are a helpful assistant"
 
     with pytest.raises(LLMTimeoutError) as exc_info:
-        client.send_message(messages, system_prompt)
+        client._sync_send_message(messages, system_prompt)
 
     assert "время" in str(exc_info.value).lower()
 
 
 def test_send_message_rate_limit_error():
-    """Test handling of rate limit errors"""
+    """Test handling of rate limit errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock API to raise rate limit error
@@ -130,13 +174,13 @@ def test_send_message_rate_limit_error():
     system_prompt = "You are a helpful assistant"
 
     with pytest.raises(LLMRateLimitError) as exc_info:
-        client.send_message(messages, system_prompt)
+        client._sync_send_message(messages, system_prompt)
 
     assert "лимит" in str(exc_info.value).lower()
 
 
 def test_send_message_api_error():
-    """Test handling of generic API errors"""
+    """Test handling of generic API errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock API to raise generic API error
@@ -148,13 +192,13 @@ def test_send_message_api_error():
     system_prompt = "You are a helpful assistant"
 
     with pytest.raises(LLMAPIError) as exc_info:
-        client.send_message(messages, system_prompt)
+        client._sync_send_message(messages, system_prompt)
 
     assert "API" in str(exc_info.value)
 
 
 def test_send_message_unknown_error():
-    """Test handling of unknown errors"""
+    """Test handling of unknown errors (sync version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
 
     # Mock API to raise unknown exception
@@ -164,20 +208,21 @@ def test_send_message_unknown_error():
     system_prompt = "You are a helpful assistant"
 
     with pytest.raises(LLMUnknownError) as exc_info:
-        client.send_message(messages, system_prompt)
+        client._sync_send_message(messages, system_prompt)
 
     assert "Unknown error" in str(exc_info.value)
 
 
-def test_send_message_empty_messages(mock_openai_response):
-    """Test sending with empty message list"""
+@pytest.mark.asyncio
+async def test_send_message_empty_messages(mock_openai_response):
+    """Test sending with empty message list (async version)"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
     client._client.chat.completions.create = Mock(return_value=mock_openai_response)
 
     messages = []
     system_prompt = "You are a helpful assistant"
 
-    result = client.send_message(messages, system_prompt)
+    result = await client.send_message(messages, system_prompt)
 
     assert result == "This is a test response from LLM"
 
