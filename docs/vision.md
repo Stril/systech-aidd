@@ -14,6 +14,9 @@
 - **python-dotenv** - управление переменными окружения
 - **structlog** - структурированное логирование
 - **pytest** - unit-тестирование
+- **ruff** - линтер и форматтер кода
+- **mypy** - статическая типизация
+- **hypothesis** - property-based тестирование
 
 ### Принципы выбора:
 - Максимальная простота
@@ -49,18 +52,30 @@ systech-aidd-1/
 ├── src/
 │   ├── __init__.py
 │   ├── telegram_bot.py          # TelegramBot класс
-│   ├── message_handler.py       # MessageHandler класс
-│   ├── openai_client.py         # OpenAIClient класс
+│   ├── message_handler.py       # MessageHandler класс (координация)
+│   ├── message_extractor.py     # MessageExtractor класс (извлечение данных)
+│   ├── messages.py              # BotMessages класс (константы текстов)
+│   ├── openai_client.py         # OpenAIClient класс (async LLM)
 │   ├── context_manager.py       # ContextManager класс
 │   ├── settings.py              # Settings класс
 │   ├── memory_storage.py        # MemoryStorage класс
+│   ├── models.py                # Модели данных (User, Message, Conversation)
+│   ├── exceptions.py            # Кастомные исключения
 │   └── main.py                  # Точка входа
 ├── tests/
 │   ├── __init__.py
-│   └── (unit-тесты для компонентов)
+│   ├── test_*.py                # Unit-тесты для компонентов
+│   ├── test_integration.py      # Интеграционные тесты
+│   └── test_*_property.py       # Property-based тесты
 ├── docs/
 │   ├── idea.md
-│   └── vision.md
+│   ├── vision.md
+│   ├── tasklist.md              # План основной разработки
+│   └── tasklist_tech_dept.md    # План устранения технического долга
+├── .cursor/
+│   └── rules/
+│       ├── conventions.mdc      # Правила разработки
+│       └── workflow.mdc         # Процесс разработки
 ├── logs/                        # Папка для логов
 │   └── (файлы по дням: 2024-01-15.log, 2024-01-16.log, ...)
 ├── .env.example
@@ -81,31 +96,40 @@ systech-aidd-1/
 
 ### Компоненты системы:
 1. **TelegramBot** - основной класс бота, инициализация и запуск
-2. **MessageHandler** - обработка входящих сообщений от пользователей
-3. **OpenAIClient** - взаимодействие с LLM через Openrouter
-4. **ContextManager** - управление контекстом диалога в памяти
-5. **MemoryStorage** - хранение данных пользователей и диалогов в памяти
-6. **Settings** - конфигурация приложения
+2. **MessageHandler** - координация обработки сообщений
+3. **MessageExtractor** - извлечение данных из Telegram сообщений
+4. **BotMessages** - константы текстовых сообщений бота
+5. **OpenAIClient** - асинхронное взаимодействие с LLM через Openrouter
+6. **ContextManager** - управление контекстом диалога в памяти
+7. **MemoryStorage** - хранение данных пользователей и диалогов в памяти
+8. **Settings** - конфигурация приложения
 
 ### Поток данных:
 ```
 1. Получение сообщения:
    Telegram API → TelegramBot → MessageHandler
 
-2. Обработка запроса:
-   MessageHandler → ContextManager (читает из MemoryStorage)
-   ContextManager → MemoryStorage (читает/пишет историю)
-   ContextManager → OpenAIClient → Openrouter LLM
+2. Извлечение данных:
+   MessageHandler → MessageExtractor → MessageContext
 
-3. Сохранение и отправка:
-   LLM Response → ContextManager (пишет в MemoryStorage)
-   ContextManager → MessageHandler → TelegramBot → Telegram API
+3. Обработка запроса:
+   MessageHandler → ContextManager (получает историю)
+   ContextManager → MemoryStorage (читает историю)
+   MessageHandler → OpenAIClient (async) → Openrouter LLM
+
+4. Сохранение и отправка:
+   LLM Response → ContextManager (обновляет контекст)
+   ContextManager → MemoryStorage (пишет историю)
+   MessageHandler → TelegramBot → Telegram API
 ```
 
 ### Принципы архитектуры:
 - **Простая линейная архитектура** - без сложных паттернов
-- **Слабая связанность** - классы взаимодействуют через интерфейсы
+- **SOLID принципы** - Single Responsibility, Dependency Injection
+- **DRY** - избегание дублирования кода через вспомогательные классы
+- **Слабая связанность** - классы взаимодействуют через DI
 - **Единственная ответственность** - каждый класс решает одну задачу
+- **Async/await** - правильное использование асинхронности
 - **In-memory storage** - все данные в оперативной памяти
 - **Валидация в классах** - проверки данных внутри каждого класса
 - **Обработка ошибок в каждом классе** - локальная обработка исключений
@@ -168,9 +192,11 @@ class MemoryStorage:
 ```python
 class OpenAIClient:
     def __init__(self, api_key: str, base_url: str, model: str)
-    def send_message(self, messages: List[Message], system_prompt: str) -> str
-    def validate_response(self, response: str) -> bool
+    async def send_message(self, messages: List[Message], system_prompt: str) -> str
+    def _sync_send_message(self, messages: List[Message], system_prompt: str) -> str
 ```
+
+**Важно**: OpenAIClient использует async/await с run_in_executor для неблокирующих вызовов
 
 ### Обработка контекста:
 - **ContextManager** управляет историей диалога
@@ -282,22 +308,38 @@ logger.error("telegram_error|error=Invalid token")
 ## 10. Тестирование
 
 ### Принципы тестирования:
-- **Простые unit-тесты** - для проверки основных компонентов системы
+- **Высокое покрытие** - минимум 80%, цель 85%+
+- **Типы тестов** - unit, integration, property-based
 - **Фреймворк pytest** - использование стандартного инструмента
-- **Запуск через pytest** - простая команда `pytest` для запуска всех тестов
-- **Тестирование компонентов** - проверка основных классов (OpenAIClient, ContextManager, MessageHandler)
-- **Минимализм** - только необходимые тесты без избыточного покрытия
+- **Async тестирование** - pytest-asyncio для async методов
+- **Моки** - pytest-mock для изоляции зависимостей
+- **Coverage** - pytest-cov для отслеживания покрытия
 
 ### Что тестируем:
-- Основные методы классов
-- Обработка ошибок
-- Валидация данных
-- Логика управления контекстом
+- **Unit тесты** - изолированное тестирование каждого класса
+- **Integration тесты** - полный поток обработки сообщений
+- **Property-based тесты** - инварианты критичных компонентов (ContextManager)
+- **Обработка ошибок** - все сценарии ошибок LLM
+- **Валидация данных** - проверка моделей и настроек
+- **Async/await** - корректность асинхронных вызовов
 
 ### Запуск тестов:
 ```bash
 # через make
-make test
+make test              # Все тесты с coverage
+make test-unit         # Только unit-тесты
+make test-integration  # Только интеграционные
+make test-property     # Только property-based
+
+# Проверка качества
+make quality           # Комплексная проверка (format + lint + types + tests)
+```
+
+### Инструменты качества:
+```bash
+make format      # Автоформатирование кода (ruff)
+make lint        # Проверка линтером (ruff)
+make type-check  # Проверка типов (mypy strict mode)
 ```
 
 ---
@@ -307,11 +349,21 @@ make test
 Данный документ определяет техническое видение проекта LLM-ассистента в виде Telegram-бота. Основные принципы:
 
 - **Максимальная простота** - KISS подход во всех аспектах
-- **Быстрая проверка идеи** - MVP без оверинжиниринга
-- **Строгое ООП** - 1 класс = 1 файл
+- **Высокое качество кода** - автоматизация через ruff + mypy
+- **SOLID принципы** - чистая архитектура с разделением ответственности
+- **Строгое ООП** - 1 класс = 1 файл, каждый класс решает одну задачу
+- **Async/await** - правильная асинхронность для неблокирующих операций
+- **Высокое покрытие тестами** - минимум 80%, цель 85%+
 - **In-memory storage** - без БД на первом этапе
 - **Простая архитектура** - линейный поток данных
 
-Документ служит техническим проектом для последующей разработки и может быть дополнен по мере развития проекта.
+### Стандарты качества:
+- ✅ Код проходит `make quality` (format + lint + type-check + tests)
+- ✅ Coverage >= 80%
+- ✅ Все тесты проходят (unit + integration + property-based)
+- ✅ Mypy strict mode без ошибок
+- ✅ Документация актуальна
 
-*Документ готов к использованию*
+Документ служит техническим проектом для последующей разработки и обновляется по мере развития проекта.
+
+*Документ актуализирован с учетом требований к качеству кода*
