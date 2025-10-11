@@ -19,6 +19,7 @@ def test_bot_messages_help():
     assert "Доступные команды" in BotMessages.HELP
     assert "/start" in BotMessages.HELP
     assert "/help" in BotMessages.HELP
+    assert "/role" in BotMessages.HELP
     assert "/reset" in BotMessages.HELP
 
 
@@ -130,3 +131,20 @@ def test_bot_messages_error_method_unknown_type():
     """Test error() method with unknown error type - should return default"""
     message = BotMessages.error("unknown_error_type")
     assert message == BotMessages.ERROR_UNEXPECTED
+
+
+@pytest.mark.unit
+def test_bot_messages_role_info():
+    """Test ROLE_INFO message constant"""
+    assert "роль" in BotMessages.ROLE_INFO.lower()
+    assert "{role_description}" in BotMessages.ROLE_INFO
+
+
+@pytest.mark.unit
+def test_bot_messages_role_info_formatting():
+    """Test ROLE_INFO can be formatted with role description"""
+    test_role = "You are a helpful technical assistant."
+    formatted = BotMessages.ROLE_INFO.format(role_description=test_role)
+    assert test_role in formatted
+    assert "роль" in formatted.lower()
+    assert "{role_description}" not in formatted

@@ -187,3 +187,20 @@ class MessageHandler:
             await message.answer(BotMessages.RESET_SUCCESS)
         else:
             await message.answer(BotMessages.RESET_NO_CONTEXT)
+
+    async def handle_role(self, message: Message) -> None:
+        """Handle /role command - show current assistant role
+
+        Args:
+            message: Incoming Telegram message
+        """
+        ctx = MessageExtractor.extract(message)
+
+        logger.info(f"user_command|user_id={ctx.user_id}|username={ctx.username}|command=role")
+
+        # Format role message with system prompt
+        role_message = BotMessages.ROLE_INFO.format(
+            role_description=self._system_prompt if self._system_prompt else "Не задана"
+        )
+
+        await message.answer(role_message)

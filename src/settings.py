@@ -1,5 +1,7 @@
 """Settings module for application configuration"""
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,3 +27,34 @@ class Settings(BaseSettings):
         "Отвечай дружелюбно, информативно и по существу. "
         "Если не знаешь ответа, честно скажи об этом."
     )
+
+    # System prompt file
+    SYSTEM_PROMPT_FILE: str = "system_prompt.txt"
+
+    @property
+    def system_prompt(self) -> str:
+        """Load system prompt from file
+
+        Returns:
+            System prompt content from file
+
+        Raises:
+            FileNotFoundError: If prompt file doesn't exist
+            ValueError: If prompt file is empty or contains only whitespace
+        """
+        prompt_path = Path(self.SYSTEM_PROMPT_FILE)
+
+        # Check if file exists
+        if not prompt_path.exists():
+            raise FileNotFoundError(f"System prompt file not found: {self.SYSTEM_PROMPT_FILE}")
+
+        # Read file content
+        content = prompt_path.read_text(encoding="utf-8")
+
+        # Validate content is not empty
+        if not content.strip():
+            raise ValueError(
+                f"System prompt file is empty or contains only whitespace: {self.SYSTEM_PROMPT_FILE}"
+            )
+
+        return content.strip()

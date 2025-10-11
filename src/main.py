@@ -65,7 +65,7 @@ async def main() -> None:
         # Initialize components
         message_handler = MessageHandler(
             openai_client=openai_client,
-            system_prompt=settings.DEFAULT_SYSTEM_PROMPT,
+            system_prompt=settings.system_prompt,
             context_manager=context_manager,
             storage=storage,
         )

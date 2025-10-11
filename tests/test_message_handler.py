@@ -478,3 +478,51 @@ async def test_handle_text_message_api_error(message_handler, mock_openai_client
     message.answer.assert_called_once()
     call_args = message.answer.call_args[0][0]
     assert "ошибка" in call_args.lower()
+
+
+@pytest.mark.unit
+async def test_handle_role_command():
+    """Test /role command shows current assistant role"""
+    # Arrange
+    system_prompt = "You are a helpful technical assistant specialized in Python."
+    handler = MessageHandler(system_prompt=system_prompt)
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = "testuser"
+    message.text = "/role"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_role(message)
+
+    # Assert
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "роль" in call_args.lower()
+    assert system_prompt in call_args
+
+
+@pytest.mark.unit
+async def test_handle_role_without_system_prompt():
+    """Test /role command with empty system prompt"""
+    # Arrange
+    handler = MessageHandler(system_prompt="")
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = "testuser"
+    message.text = "/role"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_role(message)
+
+    # Assert
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "роль" in call_args.lower()

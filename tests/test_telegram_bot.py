@@ -50,8 +50,8 @@ def test_register_handlers_called_on_init(mock_dispatcher_cls, mock_bot_cls, moc
     # Create bot - should automatically register handlers
     TelegramBot(token="test_token", message_handler=mock_message_handler)
 
-    # Verify message.register was called 4 times (start, help, reset, text)
-    assert mock_dp.message.register.call_count == 4
+    # Verify message.register was called 5 times (start, help, role, reset, text)
+    assert mock_dp.message.register.call_count == 5
 
 
 @pytest.mark.unit
@@ -87,6 +87,21 @@ def test_register_help_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_h
 @pytest.mark.unit
 @patch("src.telegram_bot.Bot")
 @patch("src.telegram_bot.Dispatcher")
+def test_register_role_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_handler):
+    """Test /role command handler registration"""
+    mock_dp = MagicMock()
+    mock_dispatcher_cls.return_value = mock_dp
+
+    TelegramBot(token="test_token", message_handler=mock_message_handler)
+
+    # Get third register call (should be /role)
+    third_call = mock_dp.message.register.call_args_list[2]
+    assert third_call[0][0] == mock_message_handler.handle_role
+
+
+@pytest.mark.unit
+@patch("src.telegram_bot.Bot")
+@patch("src.telegram_bot.Dispatcher")
 def test_register_reset_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_handler):
     """Test /reset command handler registration"""
     mock_dp = MagicMock()
@@ -94,9 +109,9 @@ def test_register_reset_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_
 
     TelegramBot(token="test_token", message_handler=mock_message_handler)
 
-    # Get third register call (should be /reset)
-    third_call = mock_dp.message.register.call_args_list[2]
-    assert third_call[0][0] == mock_message_handler.handle_reset
+    # Get fourth register call (should be /reset)
+    fourth_call = mock_dp.message.register.call_args_list[3]
+    assert fourth_call[0][0] == mock_message_handler.handle_reset
 
 
 @pytest.mark.unit
@@ -109,9 +124,9 @@ def test_register_text_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_h
 
     TelegramBot(token="test_token", message_handler=mock_message_handler)
 
-    # Get fourth register call (should be text messages)
-    fourth_call = mock_dp.message.register.call_args_list[3]
-    assert fourth_call[0][0] == mock_message_handler.handle_text_message
+    # Get fifth register call (should be text messages)
+    fifth_call = mock_dp.message.register.call_args_list[4]
+    assert fifth_call[0][0] == mock_message_handler.handle_text_message
 
 
 @pytest.mark.unit

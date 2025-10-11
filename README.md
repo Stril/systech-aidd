@@ -111,9 +111,11 @@ make test-cov
 systech-aidd-1/
 ├── src/
 │   ├── __init__.py
-│   ├── settings.py           # Settings класс (конфигурация)
+│   ├── settings.py           # Settings класс (конфигурация + загрузка промпта)
 │   ├── telegram_bot.py       # TelegramBot класс
 │   ├── message_handler.py    # MessageHandler для команд
+│   ├── message_extractor.py  # MessageExtractor для извлечения данных
+│   ├── messages.py           # BotMessages константы
 │   ├── openai_client.py      # OpenAIClient для LLM
 │   ├── context_manager.py    # ContextManager для истории диалогов
 │   ├── memory_storage.py     # MemoryStorage для хранения данных
@@ -122,17 +124,19 @@ systech-aidd-1/
 │   └── main.py               # Точка входа
 ├── tests/
 │   ├── __init__.py
-│   ├── test_settings.py      # Тесты Settings
-│   ├── test_message_handler.py  # Тесты MessageHandler
-│   ├── test_openai_client.py    # Тесты OpenAIClient
-│   ├── test_context_manager.py  # Тесты ContextManager
-│   ├── test_memory_storage.py   # Тесты MemoryStorage
-│   └── test_exceptions.py       # Тесты кастомных исключений
+│   ├── test_*.py             # Unit и integration тесты
+│   └── test_*_property.py    # Property-based тесты
+├── examples/
+│   └── prompts/              # Примеры ролей ассистента
+│       ├── technical_consultant.txt
+│       ├── educational_assistant.txt
+│       └── creative_helper.txt
 ├── docs/
 │   ├── idea.md               # Идея проекта
 │   ├── vision.md             # Техническое видение
 │   └── tasklist.md           # План разработки
 ├── logs/                     # Логи по дням (создается автоматически)
+├── system_prompt.txt         # Системный промпт (роль ассистента)
 ├── .env.example              # Пример конфигурации
 ├── .gitignore
 ├── pyproject.toml            # Зависимости проекта
@@ -144,8 +148,84 @@ systech-aidd-1/
 
 - `/start` - Начать работу с ботом
 - `/help` - Показать справку по командам
+- `/role` - Показать текущую роль ассистента
 - `/reset` - Очистить историю диалога
 - **Текстовые сообщения** - Отправьте любое текстовое сообщение, и бот ответит через LLM с учетом контекста
+
+## 🎭 Изменение роли ассистента
+
+Бот использует **ролевую модель** - системный промпт загружается из файла `system_prompt.txt`. Это позволяет легко менять специализацию ассистента без изменения кода.
+
+### Как изменить роль
+
+1. **Отредактируйте файл `system_prompt.txt`:**
+   ```bash
+   # Откройте файл в редакторе
+   notepad system_prompt.txt  # Windows
+   nano system_prompt.txt     # Linux/Mac
+   ```
+
+2. **Или используйте готовый пример роли:**
+   ```bash
+   # Технический консультант
+   cp examples/prompts/technical_consultant.txt system_prompt.txt
+
+   # Образовательный ассистент
+   cp examples/prompts/educational_assistant.txt system_prompt.txt
+
+   # Креативный помощник
+   cp examples/prompts/creative_helper.txt system_prompt.txt
+   ```
+
+3. **Перезапустите бота:**
+   ```bash
+   # Остановите бота (Ctrl+C)
+   # Запустите снова
+   make run
+   ```
+
+4. **Проверьте новую роль:**
+   ```
+   /role  # Покажет текущую роль ассистента
+   ```
+
+### Примеры ролей
+
+В папке `examples/prompts/` находятся готовые примеры специализированных ассистентов:
+
+- **technical_consultant.txt** - Технический консультант по программированию
+  - Экспертиза в Python, архитектуре, best practices
+  - Code review и техническая поддержка
+
+- **educational_assistant.txt** - Образовательный ассистент
+  - Помощь в обучении и объяснении концепций
+  - Терпеливый наставник с педагогическим подходом
+
+- **creative_helper.txt** - Креативный помощник
+  - Генерация идей, сторителлинг, копирайтинг
+  - Помощь в творческих проектах
+
+### Создание своей роли
+
+Создайте свой системный промпт в `system_prompt.txt`:
+
+```text
+Ты - [описание роли].
+
+Твой профиль:
+- [ключевая характеристика 1]
+- [ключевая характеристика 2]
+
+Твои задачи:
+- [задача 1]
+- [задача 2]
+
+Стиль общения:
+- [стиль 1]
+- [стиль 2]
+```
+
+**Важно:** Файл должен содержать понятное описание роли и поведения ассистента.
 
 ## 🔧 Makefile команды
 
@@ -212,9 +292,9 @@ make test-cov
 ```
 
 **Статистика тестов:**
-- **64 теста** - 100% pass rate ✅
-- **97.78% покрытие кода** (исключены main.py и telegram_bot.py)
-- Время выполнения: ~9 секунд
+- **121 тест** - 100% pass rate ✅
+- **98.12% покрытие кода** (исключены main.py и telegram_bot.py)
+- Время выполнения: ~15 секунд
 - **`make quality` проходит без ошибок** ✅
 
 **Покрытие по компонентам:**

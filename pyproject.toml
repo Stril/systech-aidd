@@ -69,6 +69,10 @@ disable_error_code = ["call-arg"]
 module = "src.main"
 disable_error_code = ["call-arg"]
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["no-untyped-def", "call-arg"]
+
 [tool.coverage.run]
 source = ["src"]
 omit = ["tests/*", "src/main.py", "src/telegram_bot.py"]
