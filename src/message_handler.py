@@ -7,6 +7,13 @@ from src.openai_client import OpenAIClient
 from src.context_manager import ContextManager
 from src.memory_storage import MemoryStorage
 from src.models import User, Message as StorageMessage
+from src.exceptions import (
+    LLMConnectionError,
+    LLMTimeoutError,
+    LLMRateLimitError,
+    LLMAPIError,
+    LLMError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -148,10 +155,45 @@ class MessageHandler:
             
             logger.info(f"message_handled|user_id={user_id}|response_length={len(response)}")
             
-        except Exception as e:
-            logger.error(f"message_error|user_id={user_id}|error={str(e)}")
+        except LLMConnectionError:
+            logger.error(f"message_error|user_id={user_id}|type=connection")
             await message.answer(
-                "😔 Извините, произошла ошибка при обработке вашего сообщения. "
+                "⚠️ Не удалось подключиться к сервису ИИ.\n"
+                "Пожалуйста, попробуйте через несколько минут."
+            )
+            
+        except LLMTimeoutError:
+            logger.error(f"message_error|user_id={user_id}|type=timeout")
+            await message.answer(
+                "⏱️ Превышено время ожидания ответа.\n"
+                "Попробуйте отправить сообщение еще раз."
+            )
+            
+        except LLMRateLimitError:
+            logger.error(f"message_error|user_id={user_id}|type=rate_limit")
+            await message.answer(
+                "🚫 Превышен лимит запросов к сервису ИИ.\n"
+                "Пожалуйста, подождите немного перед следующим запросом."
+            )
+            
+        except LLMAPIError as e:
+            logger.error(f"message_error|user_id={user_id}|type=api_error|details={str(e)}")
+            await message.answer(
+                "❌ Ошибка сервиса ИИ.\n"
+                "Попробуйте позже или обратитесь к администратору."
+            )
+            
+        except LLMError as e:
+            logger.error(f"message_error|user_id={user_id}|type=llm_error|details={str(e)}")
+            await message.answer(
+                "😔 Произошла ошибка при обработке вашего сообщения.\n"
+                "Пожалуйста, попробуйте еще раз."
+            )
+            
+        except Exception as e:
+            logger.error(f"message_error|user_id={user_id}|type=unexpected|error={str(e)}")
+            await message.answer(
+                "😔 Произошла непредвиденная ошибка.\n"
                 "Пожалуйста, попробуйте позже."
             )
     

@@ -11,6 +11,9 @@ Telegram-бот с интеграцией LLM для помощи в разли�
 - ✅ Команда `/reset` для очистки истории диалога
 - ✅ In-memory хранилище для пользователей и диалогов
 - ✅ Отслеживание метрик (количество пользователей, сообщений)
+- ✅ Логирование в файлы по дням (logs/YYYY-MM-DD.log)
+- ✅ Graceful обработка ошибок LLM API (таймауты, лимиты, сетевые ошибки)
+- ✅ Понятные сообщения пользователю при ошибках
 - ✅ Простая архитектура с разделением ответственности
 - ✅ Конфигурация через переменные окружения
 - ✅ Структурированное логирование
@@ -110,6 +113,7 @@ systech-aidd-1/
 │   ├── context_manager.py    # ContextManager для истории диалогов
 │   ├── memory_storage.py     # MemoryStorage для хранения данных
 │   ├── models.py             # Модели данных (User, Message, Conversation)
+│   ├── exceptions.py         # Кастомные исключения для обработки ошибок
 │   └── main.py               # Точка входа
 ├── tests/
 │   ├── __init__.py
@@ -117,12 +121,13 @@ systech-aidd-1/
 │   ├── test_message_handler.py  # Тесты MessageHandler
 │   ├── test_openai_client.py    # Тесты OpenAIClient
 │   ├── test_context_manager.py  # Тесты ContextManager
-│   └── test_memory_storage.py   # Тесты MemoryStorage
+│   ├── test_memory_storage.py   # Тесты MemoryStorage
+│   └── test_exceptions.py       # Тесты кастомных исключений
 ├── docs/
 │   ├── idea.md               # Идея проекта
 │   ├── vision.md             # Техническое видение
 │   └── tasklist.md           # План разработки
-├── logs/                     # Логи (создается автоматически)
+├── logs/                     # Логи по дням (создается автоматически)
 ├── .env.example              # Пример конфигурации
 ├── .gitignore
 ├── pyproject.toml            # Зависимости проекта
@@ -166,6 +171,8 @@ make clean        # Очистить временные файлы
 - Управление контекстом диалога (ContextManager)
 - Хранение данных в памяти (MemoryStorage)
 - Модели данных (User, Message, Conversation)
+- Обработку ошибок LLM API (Connection, Timeout, RateLimit, API errors)
+- Кастомные исключения
 - Обработку текстовых сообщений
 
 Запуск тестов:
@@ -173,14 +180,22 @@ make clean        # Очистить временные файлы
 make test
 ```
 
-**Статистика тестов:** 49 тестов, 100% pass rate
+**Статистика тестов:** 64 теста, 100% pass rate
 
 ## 📝 Логирование
 
-Логи выводятся в консоль в структурированном формате с разделителем `|`:
+Логи выводятся одновременно в консоль и в файлы по дням в структурированном формате с разделителем `|`:
+
+**Файлы логов:**
+- `logs/2025-10-10.log` - логи за конкретный день
+- Автоматическое создание новых файлов каждый день
+- Кодировка UTF-8 для корректного отображения кириллицы
+
+**Формат логов:**
 ```
-2024-01-15 10:30:00|src.telegram_bot|INFO|telegram_bot|status=initialized
-2024-01-15 10:30:01|src.message_handler|INFO|user_command|user_id=123|command=start
+2025-10-10 10:30:00|src.telegram_bot|INFO|telegram_bot|status=initialized
+2025-10-10 10:30:01|src.message_handler|INFO|user_command|user_id=123|command=start
+2025-10-10 10:30:05|src.openai_client|ERROR|llm_error|type=timeout|error=Request timeout
 ```
 
 ## 🗺️ Roadmap
@@ -189,7 +204,7 @@ make test
 - [x] **Итерация #2**: Интеграция с LLM (OpenRouter)
 - [x] **Итерация #3**: Управление контекстом диалога
 - [x] **Итерация #4**: In-memory хранилище
-- [ ] **Итерация #5**: Логирование в файлы и обработка ошибок
+- [x] **Итерация #5**: Логирование в файлы и обработка ошибок
 - [ ] **Итерация #6**: Финальная полировка
 
 Подробный план см. в [docs/tasklist.md](docs/tasklist.md)
@@ -214,6 +229,6 @@ MIT License
 
 ---
 
-**Версия**: 0.4.0  
-**Статус**: В разработке (Итерация #4 завершена)
+**Версия**: 0.5.0  
+**Статус**: В разработке (Итерация #5 завершена)
 

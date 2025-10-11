@@ -2,6 +2,14 @@
 import logging
 from typing import List
 from openai import OpenAI
+import openai
+from src.exceptions import (
+    LLMConnectionError,
+    LLMTimeoutError,
+    LLMRateLimitError,
+    LLMAPIError,
+    LLMUnknownError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +44,11 @@ class OpenAIClient:
             Response text from LLM
             
         Raises:
-            Exception: If API call fails
+            LLMConnectionError: If cannot connect to LLM service
+            LLMTimeoutError: If request times out
+            LLMRateLimitError: If rate limit is exceeded
+            LLMAPIError: If API returns an error
+            LLMUnknownError: If unknown error occurs
         """
         try:
             # Prepend system prompt to messages
@@ -55,7 +67,23 @@ class OpenAIClient:
             
             return content
             
+        except openai.APITimeoutError as e:
+            logger.error(f"llm_error|type=timeout|error={str(e)}")
+            raise LLMTimeoutError("Превышено время ожидания ответа от LLM") from e
+            
+        except openai.RateLimitError as e:
+            logger.error(f"llm_error|type=rate_limit|error={str(e)}")
+            raise LLMRateLimitError("Превышен лимит запросов к LLM") from e
+            
+        except openai.APIConnectionError as e:
+            logger.error(f"llm_error|type=connection_error|error={str(e)}")
+            raise LLMConnectionError("Не удалось подключиться к сервису LLM") from e
+            
+        except openai.APIError as e:
+            logger.error(f"llm_error|type=api_error|error={str(e)}")
+            raise LLMAPIError(f"Ошибка API LLM: {str(e)}") from e
+            
         except Exception as e:
-            logger.error(f"llm_error|error={str(e)}")
-            raise
+            logger.error(f"llm_error|type=unknown|error={str(e)}")
+            raise LLMUnknownError(f"Неизвестная ошибка LLM: {str(e)}") from e
 

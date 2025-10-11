@@ -5,6 +5,12 @@ from src.message_handler import MessageHandler
 from src.openai_client import OpenAIClient
 from src.context_manager import ContextManager
 from src.memory_storage import MemoryStorage
+from src.exceptions import (
+    LLMConnectionError,
+    LLMTimeoutError,
+    LLMRateLimitError,
+    LLMAPIError
+)
 
 
 @pytest.fixture
@@ -358,4 +364,96 @@ async def test_handle_reset_clears_storage(message_handler, mock_context_manager
     
     # Verify storage conversation was cleared
     mock_storage.clear_conversation.assert_called_once_with(12345)
+
+
+async def test_handle_text_message_connection_error(message_handler, mock_openai_client, mock_storage):
+    """Test handling of connection errors"""
+    mock_openai_client.send_message = Mock(side_effect=LLMConnectionError("Connection failed"))
+    
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.text = "Hello"
+    message.chat = MagicMock()
+    message.chat.id = 67890
+    message.bot = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_text_message(message)
+    
+    # Verify error message was sent to user
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "подключиться" in call_args.lower()
+
+
+async def test_handle_text_message_timeout_error(message_handler, mock_openai_client, mock_storage):
+    """Test handling of timeout errors"""
+    mock_openai_client.send_message = Mock(side_effect=LLMTimeoutError("Timeout"))
+    
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.text = "Hello"
+    message.chat = MagicMock()
+    message.chat.id = 67890
+    message.bot = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_text_message(message)
+    
+    # Verify error message was sent to user
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "время" in call_args.lower() or "таймаут" in call_args.lower()
+
+
+async def test_handle_text_message_rate_limit_error(message_handler, mock_openai_client, mock_storage):
+    """Test handling of rate limit errors"""
+    mock_openai_client.send_message = Mock(side_effect=LLMRateLimitError("Rate limit"))
+    
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.text = "Hello"
+    message.chat = MagicMock()
+    message.chat.id = 67890
+    message.bot = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_text_message(message)
+    
+    # Verify error message was sent to user
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "лимит" in call_args.lower()
+
+
+async def test_handle_text_message_api_error(message_handler, mock_openai_client, mock_storage):
+    """Test handling of API errors"""
+    mock_openai_client.send_message = Mock(side_effect=LLMAPIError("API error"))
+    
+    message = AsyncMock()
+    message.from_user = MagicMock()
+    message.from_user.id = 12345
+    message.from_user.username = "testuser"
+    message.text = "Hello"
+    message.chat = MagicMock()
+    message.chat.id = 67890
+    message.bot = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer = AsyncMock()
+    
+    await message_handler.handle_text_message(message)
+    
+    # Verify error message was sent to user
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "ошибка" in call_args.lower()
 

@@ -1,7 +1,15 @@
 """Tests for OpenAIClient class"""
 import pytest
 from unittest.mock import Mock, MagicMock
+import openai
 from src.openai_client import OpenAIClient
+from src.exceptions import (
+    LLMConnectionError,
+    LLMTimeoutError,
+    LLMRateLimitError,
+    LLMAPIError,
+    LLMUnknownError
+)
 
 
 @pytest.fixture
@@ -72,20 +80,102 @@ def test_send_message_with_multiple_messages(mock_openai_response):
     assert len(call_args.kwargs["messages"]) == 4  # system + 3 messages
 
 
-def test_send_message_api_error():
-    """Test handling of API errors"""
+def test_send_message_connection_error():
+    """Test handling of connection errors"""
     client = OpenAIClient("test_key", "https://test.com", "test-model")
     
-    # Mock API to raise exception
-    client._client.chat.completions.create = Mock(side_effect=Exception("API Error"))
+    # Mock API to raise connection error
+    client._client.chat.completions.create = Mock(
+        side_effect=openai.APIConnectionError(request=Mock())
+    )
     
     messages = [{"role": "user", "content": "Hello"}]
     system_prompt = "You are a helpful assistant"
     
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(LLMConnectionError) as exc_info:
         client.send_message(messages, system_prompt)
     
-    assert "API Error" in str(exc_info.value)
+    assert "подключиться" in str(exc_info.value)
+
+
+def test_send_message_timeout_error():
+    """Test handling of timeout errors"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+    
+    # Mock API to raise timeout error
+    client._client.chat.completions.create = Mock(
+        side_effect=openai.APITimeoutError(request=Mock())
+    )
+    
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+    
+    with pytest.raises(LLMTimeoutError) as exc_info:
+        client.send_message(messages, system_prompt)
+    
+    assert "время" in str(exc_info.value).lower()
+
+
+def test_send_message_rate_limit_error():
+    """Test handling of rate limit errors"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+    
+    # Mock API to raise rate limit error
+    client._client.chat.completions.create = Mock(
+        side_effect=openai.RateLimitError(
+            message="Rate limit exceeded",
+            response=Mock(),
+            body=None
+        )
+    )
+    
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+    
+    with pytest.raises(LLMRateLimitError) as exc_info:
+        client.send_message(messages, system_prompt)
+    
+    assert "лимит" in str(exc_info.value).lower()
+
+
+def test_send_message_api_error():
+    """Test handling of generic API errors"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+    
+    # Mock API to raise generic API error
+    client._client.chat.completions.create = Mock(
+        side_effect=openai.APIError(
+            message="API Error",
+            request=Mock(),
+            body=None
+        )
+    )
+    
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+    
+    with pytest.raises(LLMAPIError) as exc_info:
+        client.send_message(messages, system_prompt)
+    
+    assert "API" in str(exc_info.value)
+
+
+def test_send_message_unknown_error():
+    """Test handling of unknown errors"""
+    client = OpenAIClient("test_key", "https://test.com", "test-model")
+    
+    # Mock API to raise unknown exception
+    client._client.chat.completions.create = Mock(
+        side_effect=ValueError("Unknown error")
+    )
+    
+    messages = [{"role": "user", "content": "Hello"}]
+    system_prompt = "You are a helpful assistant"
+    
+    with pytest.raises(LLMUnknownError) as exc_info:
+        client.send_message(messages, system_prompt)
+    
+    assert "Unknown error" in str(exc_info.value)
 
 
 def test_send_message_empty_messages(mock_openai_response):
