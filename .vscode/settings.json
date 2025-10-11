@@ -2,7 +2,7 @@
   // Python настройки
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
   "python.terminal.activateEnvironment": true,
-  
+
   // Pytest настройки
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
@@ -10,7 +10,7 @@
     "tests",
     "-v"
   ],
-  
+
   // Ruff форматирование и линтинг
   "python.formatting.provider": "none",
   "[python]": {
@@ -21,27 +21,27 @@
       "source.organizeImports": "explicit"
     }
   },
-  
+
   // Ruff расширение настройки
   "ruff.enable": true,
   "ruff.lint.run": "onSave",
   "ruff.format.args": [],
   "ruff.lint.args": [],
-  
+
   // Mypy настройки
   "python.linting.enabled": true,
   "python.linting.mypyEnabled": true,
   "python.linting.mypyArgs": [
     "--config-file=pyproject.toml"
   ],
-  
+
   // Редактор настройки
   "editor.rulers": [100],
   "editor.tabSize": 4,
   "editor.insertSpaces": true,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  
+
   // Исключения из поиска
   "files.exclude": {
     "**/__pycache__": true,
@@ -51,11 +51,11 @@
     "**/.ruff_cache": true,
     "**/.coverage": true
   },
-  
+
   // Автосохранение
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
-  
+
   // Terminal настройки
   "terminal.integrated.env.windows": {
     "PYTHONPATH": "${workspaceFolder}"
