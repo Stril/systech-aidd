@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from typing import Protocol
 
 from aiogram.types import Message
 
@@ -13,12 +14,30 @@ from src.exceptions import (
     LLMRateLimitError,
     LLMTimeoutError,
 )
-from src.memory_storage import MemoryStorage
 from src.message_extractor import MessageExtractor
 from src.messages import BotMessages
+from src.models import Conversation, User
 from src.models import Message as StorageMessage
-from src.models import User
 from src.openai_client import OpenAIClient
+
+
+class Storage(Protocol):
+    """Protocol for storage implementations"""
+
+    async def add_user(self, user: User) -> None: ...
+
+    async def user_exists(self, user_id: int) -> bool: ...
+
+    async def get_user(self, user_id: int) -> User | None: ...
+
+    async def add_message_to_conversation(self, user_id: int, message: StorageMessage) -> None: ...
+
+    async def increment_user_message_count(self, user_id: int) -> None: ...
+
+    async def get_conversation(self, user_id: int) -> Conversation | None: ...
+
+    async def clear_conversation(self, user_id: int) -> None: ...
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +50,7 @@ class MessageHandler:
         openai_client: OpenAIClient | None = None,
         system_prompt: str = "",
         context_manager: ContextManager | None = None,
-        storage: MemoryStorage | None = None,
+        storage: Storage | None = None,
     ):
         """Initialize message handler
 
@@ -44,7 +63,7 @@ class MessageHandler:
         self._openai_client = openai_client
         self._system_prompt = system_prompt
         self._context_manager = context_manager
-        self._storage = storage
+        self._storage: Storage | None = storage
 
     async def handle_start(self, message: Message) -> None:
         """Handle /start command
@@ -58,7 +77,7 @@ class MessageHandler:
 
         # Save user to storage
         if self._storage and ctx.user_id != 0:
-            if not self._storage.user_exists(ctx.user_id):
+            if not await self._storage.user_exists(ctx.user_id):
                 user = User(
                     user_id=ctx.user_id,
                     username=ctx.username if ctx.username != "Unknown" else None,
@@ -66,7 +85,7 @@ class MessageHandler:
                     created_at=datetime.now(),
                     message_count=0,
                 )
-                self._storage.add_user(user)
+                await self._storage.add_user(user)
 
         await message.answer(BotMessages.WELCOME)
 
@@ -109,10 +128,14 @@ class MessageHandler:
         # Save user message to storage
         if self._storage and ctx.user_id != 0:
             user_msg = StorageMessage(
-                user_id=ctx.user_id, role="user", content=ctx.text, timestamp=datetime.now()
+                user_id=ctx.user_id,
+                role="user",
+                content=ctx.text,
+                created_at=datetime.now(),
+                content_length=len(ctx.text),
             )
-            self._storage.add_message_to_conversation(ctx.user_id, user_msg)
-            self._storage.increment_user_message_count(ctx.user_id)
+            await self._storage.add_message_to_conversation(ctx.user_id, user_msg)
+            await self._storage.increment_user_message_count(ctx.user_id)
 
         try:
             # Send typing action
@@ -132,9 +155,10 @@ class MessageHandler:
                     user_id=ctx.user_id,
                     role="assistant",
                     content=response,
-                    timestamp=datetime.now(),
+                    created_at=datetime.now(),
+                    content_length=len(response),
                 )
-                self._storage.add_message_to_conversation(ctx.user_id, assistant_msg)
+                await self._storage.add_message_to_conversation(ctx.user_id, assistant_msg)
 
             # Send response to user
             await message.answer(response)
@@ -181,7 +205,7 @@ class MessageHandler:
 
         # Clear storage conversation
         if self._storage and ctx.user_id != 0:
-            self._storage.clear_conversation(ctx.user_id)
+            await self._storage.clear_conversation(ctx.user_id)
 
         if self._context_manager or self._storage:
             await message.answer(BotMessages.RESET_SUCCESS)

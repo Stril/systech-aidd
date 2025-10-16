@@ -87,13 +87,25 @@ async def test_reset_clears_all_components():
 
     from src.models import Message as StorageMessage
 
-    storage.add_message_to_conversation(
+    await storage.add_message_to_conversation(
         user_id,
-        StorageMessage(user_id=user_id, role="user", content="Hello", timestamp=datetime.now()),
+        StorageMessage(
+            user_id=user_id,
+            role="user",
+            content="Hello",
+            created_at=datetime.now(),
+            content_length=len("Hello"),
+        ),
     )
-    storage.add_message_to_conversation(
+    await storage.add_message_to_conversation(
         user_id,
-        StorageMessage(user_id=user_id, role="assistant", content="Hi", timestamp=datetime.now()),
+        StorageMessage(
+            user_id=user_id,
+            role="assistant",
+            content="Hi",
+            created_at=datetime.now(),
+            content_length=len("Hi"),
+        ),
     )
 
     # Verify data exists
@@ -262,7 +274,7 @@ async def test_start_command_creates_user_in_storage():
     await handler.handle_start(message)
 
     # Verify user was created in storage
-    assert storage.user_exists(user_id)
+    assert await storage.user_exists(user_id)
     user = storage.get_user(user_id)
     assert user is not None
     assert user.user_id == user_id

@@ -13,6 +13,7 @@ class User:
     first_name: str | None
     created_at: datetime
     message_count: int = 0
+    deleted_at: datetime | None = None
 
     def __repr__(self) -> str:
         return f"User(id={self.user_id}, username={self.username}, messages={self.message_count})"
@@ -25,7 +26,10 @@ class Message:
     user_id: int
     role: str  # "user" or "assistant"
     content: str
-    timestamp: datetime
+    created_at: datetime
+    content_length: int
+    id: int | None = None
+    deleted_at: datetime | None = None
 
     def __repr__(self) -> str:
         return f"Message(user_id={self.user_id}, role={self.role}, length={len(self.content)})"
@@ -39,6 +43,8 @@ class Conversation:
     messages: list[Message] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
+    id: int | None = None
+    deleted_at: datetime | None = None
 
     def add_message(self, message: Message) -> None:
         """Add a message to the conversation"""

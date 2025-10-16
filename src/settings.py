@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # System prompt file
     SYSTEM_PROMPT_FILE: str = "system_prompt.txt"
 
+    # Database
+    DATABASE_URL: str = "sqlite+aiosqlite:///data/bot.db"
+
     @property
     def system_prompt(self) -> str:
         """Load system prompt from file

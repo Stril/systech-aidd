@@ -33,11 +33,11 @@ def mock_context_manager():
 def mock_storage():
     """Fixture for mock MemoryStorage"""
     storage = Mock(spec=MemoryStorage)
-    storage.user_exists = Mock(return_value=False)
-    storage.add_user = Mock()
-    storage.add_message_to_conversation = Mock()
-    storage.increment_user_message_count = Mock()
-    storage.clear_conversation = Mock()
+    storage.user_exists = AsyncMock(return_value=False)
+    storage.add_user = AsyncMock()
+    storage.add_message_to_conversation = AsyncMock()
+    storage.increment_user_message_count = AsyncMock()
+    storage.clear_conversation = AsyncMock()
     return storage
 
 
