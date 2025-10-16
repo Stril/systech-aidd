@@ -21,7 +21,14 @@ def test_memory_storage_initialization():
 async def test_add_user():
     """Test adding a user"""
     storage = MemoryStorage()
-    user = User(user_id=123, username="testuser", first_name="Test", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user)
     assert await storage.user_exists(123)
@@ -33,7 +40,14 @@ async def test_add_user():
 async def test_get_user():
     """Test getting a user"""
     storage = MemoryStorage()
-    user = User(user_id=123, username="testuser", first_name="Test", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user)
     retrieved_user = storage.get_user(123)
@@ -60,6 +74,8 @@ async def test_update_user():
         user_id=123,
         username="testuser",
         first_name="Test",
+        last_name="User",
+        language_code="en",
         created_at=datetime.now(),
         message_count=5,
     )
@@ -71,6 +87,8 @@ async def test_update_user():
         user_id=123,
         username="newusername",
         first_name="Test",
+        last_name="UpdatedUser",
+        language_code="ru",
         created_at=datetime.now(),
         message_count=10,
     )
@@ -91,7 +109,12 @@ async def test_get_all_users():
 
     for i in range(3):
         user = User(
-            user_id=100 + i, username=f"user{i}", first_name=f"User {i}", created_at=datetime.now()
+            user_id=100 + i,
+            username=f"user{i}",
+            first_name=f"User {i}",
+            last_name=None,
+            language_code="en",
+            created_at=datetime.now(),
         )
         await storage.add_user(user)
 
@@ -109,6 +132,8 @@ async def test_increment_user_message_count():
         user_id=123,
         username="testuser",
         first_name="Test",
+        last_name="User",
+        language_code="en",
         created_at=datetime.now(),
         message_count=0,
     )
@@ -309,7 +334,15 @@ async def test_get_metrics():
 
     # Add users
     for i in range(2):
-        user = User(100 + i, f"user{i}", f"User {i}", datetime.now(), message_count=5)
+        user = User(
+            user_id=100 + i,
+            username=f"user{i}",
+            first_name=f"User {i}",
+            last_name=None,
+            language_code="en",
+            created_at=datetime.now(),
+            message_count=5,
+        )
         await storage.add_user(user)
 
     # Add messages

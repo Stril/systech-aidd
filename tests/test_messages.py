@@ -21,6 +21,7 @@ def test_bot_messages_help():
     assert "/help" in BotMessages.HELP
     assert "/role" in BotMessages.HELP
     assert "/reset" in BotMessages.HELP
+    assert "/profile" in BotMessages.HELP
 
 
 @pytest.mark.unit
@@ -148,3 +149,50 @@ def test_bot_messages_role_info_formatting():
     assert test_role in formatted
     assert "роль" in formatted.lower()
     assert "{role_description}" not in formatted
+
+
+@pytest.mark.unit
+def test_bot_messages_profile_info():
+    """Test PROFILE_INFO message constant"""
+    assert "профиль" in BotMessages.PROFILE_INFO.lower()
+    assert "{user_id}" in BotMessages.PROFILE_INFO
+    assert "{first_name}" in BotMessages.PROFILE_INFO
+    assert "{last_name}" in BotMessages.PROFILE_INFO
+    assert "{username}" in BotMessages.PROFILE_INFO
+    assert "{language_code}" in BotMessages.PROFILE_INFO
+    assert "{message_count}" in BotMessages.PROFILE_INFO
+    assert "{created_at}" in BotMessages.PROFILE_INFO
+
+
+@pytest.mark.unit
+def test_bot_messages_profile_info_formatting():
+    """Test PROFILE_INFO can be formatted with user data"""
+    formatted = BotMessages.PROFILE_INFO.format(
+        user_id=123,
+        first_name="Test",
+        last_name="User",
+        username="testuser",
+        language_code="en",
+        message_count=10,
+        created_at="16.10.2025 12:00",
+    )
+    assert "123" in formatted
+    assert "Test" in formatted
+    assert "User" in formatted
+    assert "testuser" in formatted
+    assert "en" in formatted
+    assert "10" in formatted
+    assert "16.10.2025 12:00" in formatted
+
+
+@pytest.mark.unit
+def test_bot_messages_profile_not_found():
+    """Test PROFILE_NOT_FOUND message constant"""
+    assert "Профиль не найден" in BotMessages.PROFILE_NOT_FOUND
+    assert "/start" in BotMessages.PROFILE_NOT_FOUND
+
+
+@pytest.mark.unit
+def test_bot_messages_profile_unavailable():
+    """Test PROFILE_UNAVAILABLE message constant"""
+    assert "Профиль недоступен" in BotMessages.PROFILE_UNAVAILABLE

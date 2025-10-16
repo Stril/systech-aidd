@@ -52,6 +52,8 @@ class SQLiteStorage:
                 # Update existing user
                 existing_user.username = user.username
                 existing_user.first_name = user.first_name
+                existing_user.last_name = user.last_name
+                existing_user.language_code = user.language_code
                 existing_user.message_count = user.message_count
                 logger.info(f"sqlite_storage|user_updated|user_id={user.user_id}")
             else:

@@ -31,7 +31,14 @@ async def storage():
 @pytest.mark.asyncio
 async def test_add_user(storage: SQLiteStorage):
     """Test adding a user"""
-    user = User(user_id=123, username="testuser", first_name="Test", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user)
     assert await storage.user_exists(123)
@@ -42,7 +49,14 @@ async def test_add_user(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_get_user(storage: SQLiteStorage):
     """Test getting a user"""
-    user = User(user_id=123, username="testuser", first_name="Test", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user)
     retrieved_user = await storage.get_user(123)
@@ -64,11 +78,23 @@ async def test_get_nonexistent_user(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_update_user(storage: SQLiteStorage):
     """Test updating an existing user"""
-    user = User(user_id=123, username="testuser", first_name="Test", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime.now(),
+    )
     await storage.add_user(user)
 
     updated_user = User(
-        user_id=123, username="updateduser", first_name="Updated", created_at=datetime.now()
+        user_id=123,
+        username="updateduser",
+        first_name="Updated",
+        last_name="UpdatedUser",
+        language_code="ru",
+        created_at=datetime.now(),
     )
     await storage.add_user(updated_user)
 
@@ -76,14 +102,30 @@ async def test_update_user(storage: SQLiteStorage):
     assert retrieved_user is not None
     assert retrieved_user.username == "updateduser"
     assert retrieved_user.first_name == "Updated"
+    assert retrieved_user.last_name == "UpdatedUser"
+    assert retrieved_user.language_code == "ru"
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_all_users(storage: SQLiteStorage):
     """Test getting all users"""
-    user1 = User(user_id=123, username="user1", first_name="User1", created_at=datetime.now())
-    user2 = User(user_id=456, username="user2", first_name="User2", created_at=datetime.now())
+    user1 = User(
+        user_id=123,
+        username="user1",
+        first_name="User1",
+        last_name=None,
+        language_code="en",
+        created_at=datetime.now(),
+    )
+    user2 = User(
+        user_id=456,
+        username="user2",
+        first_name="User2",
+        last_name=None,
+        language_code="ru",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user1)
     await storage.add_user(user2)
@@ -102,6 +144,8 @@ async def test_increment_user_message_count(storage: SQLiteStorage):
         user_id=123,
         username="testuser",
         first_name="Test",
+        last_name="User",
+        language_code="en",
         created_at=datetime.now(),
         message_count=0,
     )
@@ -217,8 +261,22 @@ async def test_clear_conversation(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_get_total_users(storage: SQLiteStorage):
     """Test getting total number of users"""
-    user1 = User(user_id=123, username="user1", first_name="User1", created_at=datetime.now())
-    user2 = User(user_id=456, username="user2", first_name="User2", created_at=datetime.now())
+    user1 = User(
+        user_id=123,
+        username="user1",
+        first_name="User1",
+        last_name=None,
+        language_code="en",
+        created_at=datetime.now(),
+    )
+    user2 = User(
+        user_id=456,
+        username="user2",
+        first_name="User2",
+        last_name=None,
+        language_code="ru",
+        created_at=datetime.now(),
+    )
 
     await storage.add_user(user1)
     await storage.add_user(user2)
@@ -265,7 +323,14 @@ async def test_get_total_messages(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_get_metrics(storage: SQLiteStorage):
     """Test getting all storage metrics"""
-    user = User(user_id=123, username="user1", first_name="User1", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="user1",
+        first_name="User1",
+        last_name=None,
+        language_code="en",
+        created_at=datetime.now(),
+    )
     await storage.add_user(user)
 
     message = Message(
@@ -292,7 +357,14 @@ async def test_get_metrics(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_soft_delete_user(storage: SQLiteStorage):
     """Test that soft deleted users are not returned"""
-    user = User(user_id=123, username="user1", first_name="User1", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="user1",
+        first_name="User1",
+        last_name=None,
+        language_code="en",
+        created_at=datetime.now(),
+    )
     await storage.add_user(user)
 
     # Soft delete user directly in DB
@@ -367,7 +439,14 @@ async def test_multiple_conversations_per_user(storage: SQLiteStorage):
 @pytest.mark.asyncio
 async def test_metrics_exclude_soft_deleted(storage: SQLiteStorage):
     """Test that metrics exclude soft deleted entities"""
-    user = User(user_id=123, username="user1", first_name="User1", created_at=datetime.now())
+    user = User(
+        user_id=123,
+        username="user1",
+        first_name="User1",
+        last_name=None,
+        language_code="en",
+        created_at=datetime.now(),
+    )
     await storage.add_user(user)
 
     message = Message(

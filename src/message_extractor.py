@@ -12,6 +12,8 @@ class MessageContext:
     user_id: int
     username: str
     first_name: str | None
+    last_name: str | None
+    language_code: str | None
     text: str
     chat_id: int
 
@@ -40,6 +42,8 @@ class MessageExtractor:
             user_id=message.from_user.id if message.from_user else 0,
             username=username,
             first_name=message.from_user.first_name if message.from_user else None,
+            last_name=message.from_user.last_name if message.from_user else None,
+            language_code=message.from_user.language_code if message.from_user else None,
             text=message.text or "",
             chat_id=message.chat.id,
         )

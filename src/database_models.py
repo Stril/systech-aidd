@@ -23,6 +23,8 @@ class UserDB(Base):
     user_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     username: Mapped[str | None] = mapped_column(nullable=True)
     first_name: Mapped[str | None] = mapped_column(nullable=True)
+    last_name: Mapped[str | None] = mapped_column(nullable=True)
+    language_code: Mapped[str | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     message_count: Mapped[int] = mapped_column(default=0)
     deleted_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
@@ -39,6 +41,8 @@ class UserDB(Base):
             user_id=self.user_id,
             username=self.username,
             first_name=self.first_name,
+            last_name=self.last_name,
+            language_code=self.language_code,
             created_at=self.created_at,
             message_count=self.message_count,
             deleted_at=self.deleted_at,
@@ -51,6 +55,8 @@ class UserDB(Base):
             user_id=user.user_id,
             username=user.username,
             first_name=user.first_name,
+            last_name=user.last_name,
+            language_code=user.language_code,
             created_at=user.created_at,
             message_count=user.message_count,
             deleted_at=user.deleted_at,

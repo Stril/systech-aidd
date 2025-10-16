@@ -11,6 +11,8 @@ class User:
     user_id: int
     username: str | None
     first_name: str | None
+    last_name: str | None
+    language_code: str | None
     created_at: datetime
     message_count: int = 0
     deleted_at: datetime | None = None

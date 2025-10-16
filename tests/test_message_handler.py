@@ -35,6 +35,7 @@ def mock_storage():
     storage = Mock(spec=MemoryStorage)
     storage.user_exists = AsyncMock(return_value=False)
     storage.add_user = AsyncMock()
+    storage.get_user = AsyncMock(return_value=None)
     storage.add_message_to_conversation = AsyncMock()
     storage.increment_user_message_count = AsyncMock()
     storage.clear_conversation = AsyncMock()
@@ -526,3 +527,151 @@ async def test_handle_role_without_system_prompt():
     message.answer.assert_called_once()
     call_args = message.answer.call_args[0][0]
     assert "роль" in call_args.lower()
+
+
+@pytest.mark.unit
+async def test_handle_profile_command_success():
+    """Test /profile command shows user data"""
+    # Arrange
+    from datetime import datetime
+
+    from src.models import User
+
+    mock_storage = Mock()
+    test_user = User(
+        user_id=123,
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        language_code="en",
+        created_at=datetime(2025, 10, 16, 12, 0),
+        message_count=10,
+    )
+    mock_storage.get_user = AsyncMock(return_value=test_user)
+
+    handler = MessageHandler(storage=mock_storage)
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = "testuser"
+    message.from_user.first_name = "Test"
+    message.from_user.last_name = "User"
+    message.from_user.language_code = "en"
+    message.text = "/profile"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_profile(message)
+
+    # Assert
+    mock_storage.get_user.assert_called_once_with(123)
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "профиль" in call_args.lower()
+    assert "123" in call_args
+    assert "Test" in call_args
+    assert "User" in call_args
+    assert "testuser" in call_args
+    assert "en" in call_args
+    assert "10" in call_args
+
+
+@pytest.mark.unit
+async def test_handle_profile_command_user_not_found():
+    """Test /profile command when user not found in storage"""
+    # Arrange
+    mock_storage = Mock()
+    mock_storage.get_user = AsyncMock(return_value=None)
+
+    handler = MessageHandler(storage=mock_storage)
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = "testuser"
+    message.from_user.first_name = "Test"
+    message.from_user.last_name = None
+    message.from_user.language_code = "en"
+    message.text = "/profile"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_profile(message)
+
+    # Assert
+    mock_storage.get_user.assert_called_once_with(123)
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "не найден" in call_args.lower()
+    assert "/start" in call_args
+
+
+@pytest.mark.unit
+async def test_handle_profile_command_without_storage():
+    """Test /profile command when storage is not configured"""
+    # Arrange
+    handler = MessageHandler(storage=None)
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = "testuser"
+    message.from_user.first_name = "Test"
+    message.from_user.last_name = None
+    message.from_user.language_code = "en"
+    message.text = "/profile"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_profile(message)
+
+    # Assert
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "недоступен" in call_args.lower()
+
+
+@pytest.mark.unit
+async def test_handle_profile_command_with_null_user_fields():
+    """Test /profile command shows 'Не указано' for null fields"""
+    # Arrange
+    from datetime import datetime
+
+    from src.models import User
+
+    mock_storage = Mock()
+    test_user = User(
+        user_id=123,
+        username=None,
+        first_name=None,
+        last_name=None,
+        language_code=None,
+        created_at=datetime(2025, 10, 16, 12, 0),
+        message_count=0,
+    )
+    mock_storage.get_user = AsyncMock(return_value=test_user)
+
+    handler = MessageHandler(storage=mock_storage)
+
+    message = AsyncMock()
+    message.from_user = Mock()
+    message.from_user.id = 123
+    message.from_user.username = None
+    message.from_user.first_name = None
+    message.from_user.last_name = None
+    message.from_user.language_code = None
+    message.text = "/profile"
+    message.chat = Mock()
+    message.chat.id = 456
+
+    # Act
+    await handler.handle_profile(message)
+
+    # Assert
+    message.answer.assert_called_once()
+    call_args = message.answer.call_args[0][0]
+    assert "Не указано" in call_args

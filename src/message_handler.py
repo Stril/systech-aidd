@@ -82,6 +82,8 @@ class MessageHandler:
                     user_id=ctx.user_id,
                     username=ctx.username if ctx.username != "Unknown" else None,
                     first_name=ctx.first_name,
+                    last_name=ctx.last_name,
+                    language_code=ctx.language_code,
                     created_at=datetime.now(),
                     message_count=0,
                 )
@@ -228,3 +230,31 @@ class MessageHandler:
         )
 
         await message.answer(role_message)
+
+    async def handle_profile(self, message: Message) -> None:
+        """Handle /profile command - show user data
+
+        Args:
+            message: Incoming Telegram message
+        """
+        ctx = MessageExtractor.extract(message)
+
+        logger.info(f"user_command|user_id={ctx.user_id}|username={ctx.username}|command=profile")
+
+        if self._storage and ctx.user_id != 0:
+            user = await self._storage.get_user(ctx.user_id)
+            if user:
+                profile_msg = BotMessages.PROFILE_INFO.format(
+                    user_id=user.user_id,
+                    first_name=user.first_name or "Не указано",
+                    last_name=user.last_name or "Не указано",
+                    username=user.username or "Не указано",
+                    language_code=user.language_code or "Не указано",
+                    message_count=user.message_count,
+                    created_at=user.created_at.strftime("%d.%m.%Y %H:%M"),
+                )
+                await message.answer(profile_msg)
+            else:
+                await message.answer(BotMessages.PROFILE_NOT_FOUND)
+        else:
+            await message.answer(BotMessages.PROFILE_UNAVAILABLE)
