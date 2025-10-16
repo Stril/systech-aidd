@@ -134,7 +134,8 @@ systech-aidd-1/
 ├── docs/
 │   ├── idea.md               # Идея проекта
 │   ├── vision.md             # Техническое видение
-│   └── tasklist.md           # План разработки
+│   ├── roadmap.md            # Roadmap со спринтами
+│   └── tasklists/            # Тасклисты спринтов
 ├── logs/                     # Логи по дням (создается автоматически)
 ├── system_prompt.txt         # Системный промпт (роль ассистента)
 ├── .env.example              # Пример конфигурации
@@ -339,7 +340,7 @@ make test-cov
 
 **Проект завершен!** Все задачи выполнены согласно плану разработки.
 
-Подробный план см. в [docs/tasklist.md](docs/tasklist.md)
+Подробный план см. в [docs/roadmap.md](docs/roadmap.md) (спринт SP-0)
 
 ## 📖 Документация
 
@@ -355,8 +356,9 @@ make test-cov
 ### Основная документация
 - [idea.md](docs/idea.md) - Исходная идея проекта
 - [vision.md](docs/vision.md) - Техническое видение и архитектура
-- [tasklist.md](docs/tasklist.md) - Детальный план разработки по итерациям
-- [ADRs](docs/adrs/) - Архитектурные решения (5 документов)
+- [roadmap.md](docs/roadmap.md) - Roadmap проекта со спринтами
+- [tasklists/](docs/tasklists/) - Детальные планы по спринтам
+- [ADRs](docs/adrs/) - Архитектурные решения (7 документов)
 
 ## 🤝 Вклад в разработку
 

@@ -189,10 +189,10 @@ def test_context_never_exceeds_max_messages(messages, max_messages):
     memory_storage = MemoryStorage()
     context_manager = ContextManager(memory_storage, max_messages=max_messages)
     user_id = "test_user"
-    
+
     for msg in messages:
         context_manager.add_message(user_id, msg)
-    
+
     context = context_manager.get_context(user_id)
     assert len(context) <= max_messages
 
@@ -203,13 +203,13 @@ def test_context_preserves_order(messages):
     memory_storage = MemoryStorage()
     context_manager = ContextManager(memory_storage, max_messages=100)
     user_id = "test_user"
-    
+
     for msg in messages:
         context_manager.add_message(user_id, {"role": "user", "content": msg})
-    
+
     context = context_manager.get_context(user_id)
     retrieved_messages = [m["content"] for m in context]
-    
+
     # Последние N сообщений должны быть в том же порядке
     assert retrieved_messages == messages[-len(retrieved_messages):]
 ```
@@ -270,7 +270,7 @@ def test_storage_isolates_user_data(user_ids, data):
     storage = MemoryStorage()
     for user_id, user_data in zip(user_ids, data):
         storage.set_context(user_id, user_data)
-    
+
     # Проверка изоляции
     for user_id in user_ids:
         other_users = [uid for uid in user_ids if uid != user_id]
@@ -290,10 +290,10 @@ def test_full_message_flow_preserves_history(messages):
     """История диалога сохраняется корректно при любой последовательности"""
     handler = create_test_handler()
     user_id = "test_user"
-    
+
     for msg in messages:
         await handler.handle_message(user_id, msg)
-    
+
     context = handler._context_manager.get_context(user_id)
     assert len(context) > 0
     assert all("role" in m and "content" in m for m in context)
@@ -343,7 +343,7 @@ def test_context_manager_invariant(messages):
 ## Связанные решения
 - ADR-001: Использование Dependency Injection (упрощает тестирование)
 - ADR-004: Ruff + Mypy (комплексный контроль качества)
-- Итерация #4 в `tasklist_tech_dept.md` (план внедрения)
+- Итерация #4 в `tasklists/tasklist_tech_dept-sp0.md` (план внедрения)
 
 ## Метрики успеха
 - Property-based тесты для ContextManager и MemoryStorage
@@ -353,7 +353,7 @@ def test_context_manager_invariant(messages):
 - Регрессионные тесты для всех найденных Hypothesis примеров
 
 ---
-**Дата:** 2025-10-11  
-**Автор:** Команда разработки  
+**Дата:** 2025-10-11
+**Автор:** Команда разработки
 **Статус:** Предлагается к принятию
 
