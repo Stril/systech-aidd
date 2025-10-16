@@ -343,9 +343,20 @@ make test-cov
 
 ## 📖 Документация
 
+### Гайды для онбординга
+- **[Guides](docs/guides/)** - Полный набор гайдов для быстрого старта (~3 часа)
+  - [Getting Started](docs/guides/01-getting-started.md) - Установка и запуск (10 мин)
+  - [Quick Tour](docs/guides/02-quick-tour.md) - Обзор возможностей (15 мин)
+  - [Architecture Overview](docs/guides/03-architecture-overview.md) - Архитектура с диаграммами (20 мин)
+  - [Codebase Tour](docs/guides/04-codebase-tour.md) - Тур по коду (20 мин)
+  - [Development Workflow](docs/guides/08-development-workflow.md) - Процесс разработки (30 мин)
+  - [Testing Guide](docs/guides/09-testing-guide.md) - Гайд по тестированию (30 мин)
+
+### Основная документация
 - [idea.md](docs/idea.md) - Исходная идея проекта
 - [vision.md](docs/vision.md) - Техническое видение и архитектура
 - [tasklist.md](docs/tasklist.md) - Детальный план разработки по итерациям
+- [ADRs](docs/adrs/) - Архитектурные решения (5 документов)
 
 ## 🤝 Вклад в разработку
 
