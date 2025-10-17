@@ -257,9 +257,29 @@ Backend API документация доступна после запуска 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+## Dashboard
+
+Dashboard доступен по адресу `/dashboard` и предоставляет визуализацию статистики диалогов.
+
+### Функциональность
+
+- **4 ключевые метрики**: Total Conversations, Active Users, Avg. Conversation Length, Total Messages
+- **График активности**: визуализация активности по часам (day) или дням (week)
+- **Переключение периодов**: день (24 часа) или неделя (7 дней)
+- **Переключение тем**: темная (по умолчанию) и светлая темы
+- **GitHub ссылка**: быстрый доступ к репозиторию
+
+### Использование
+
+1. Запустите API сервер: `make api-run`
+2. Запустите frontend: `make frontend-dev`
+3. Откройте http://localhost:3000/dashboard
+
+См. [dashboard-components.md](doc/dashboard-components.md) для подробной документации компонентов.
+
 ## Roadmap
 
-### Текущий статус: FE-SP-2 ✅
+### Текущий статус: FE-SP-3 ✅
 
 - ✅ Frontend Vision документ
 - ✅ Инициализация Next.js проекта
@@ -267,10 +287,12 @@ Backend API документация доступна после запуска 
 - ✅ Установка shadcn/ui
 - ✅ API клиент и типы
 - ✅ Базовая страница-заглушка
+- ✅ **Dashboard с визуализацией статистики**
+- ✅ **Система тем (dark/light)**
+- ✅ **Тестирование (Vitest + React Testing Library)**
 
 ### Следующие спринты
 
-- **FE-SP-3**: Реализация Dashboard (визуализация статистики)
 - **FE-SP-4**: Реализация ИИ-чата (text-to-SQL)
 - **FE-SP-5**: Переход на Real API (интеграция с БД)
 

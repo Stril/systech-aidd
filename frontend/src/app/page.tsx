@@ -78,13 +78,18 @@ export default function Home() {
 
             <div className="flex gap-2 pt-4">
               <Button asChild>
+                <a href="/dashboard">
+                  Open Dashboard
+                </a>
+              </Button>
+              <Button variant="outline" asChild>
                 <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer">
                   API Документация
                 </a>
               </Button>
               <Button variant="outline" asChild>
                 <a
-                  href="https://github.com/yourusername/systech-aidd-1"
+                  href="https://github.com/aidialogs/systech-aidd/tree/main"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

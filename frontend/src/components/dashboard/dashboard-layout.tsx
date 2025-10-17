@@ -1,0 +1,40 @@
+/**
+ * Dashboard Layout Component
+ * Provides header with GitHub link, title, and theme toggle
+ */
+
+import { Github } from "lucide-react";
+import Link from "next/link";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element {
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="https://github.com/aidialogs/systech-aidd/tree/main"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="icon" aria-label="View on GitHub">
+                <Github className="h-5 w-5" />
+              </Button>
+            </Link>
+            <h1 className="text-xl font-semibold">Bot Statistics Dashboard</h1>
+          </div>
+          <ThemeToggle />
+        </div>
+      </header>
+      <main className="container py-6">{children}</main>
+    </div>
+  );
+}
+

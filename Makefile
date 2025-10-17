@@ -103,6 +103,15 @@ frontend-type-check:
 frontend-format:
 	cd frontend && pnpm format
 
-frontend-quality: frontend-lint frontend-type-check
+frontend-test:
+	cd frontend && pnpm test
+
+frontend-test-watch:
+	cd frontend && pnpm test:watch
+
+frontend-test-coverage:
+	cd frontend && pnpm test:coverage
+
+frontend-quality: frontend-lint frontend-type-check frontend-test
 	@echo "✅ Frontend quality checks passed"
 
