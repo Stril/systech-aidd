@@ -103,6 +103,29 @@ class MessageHandler:
 
         await message.answer(BotMessages.HELP)
 
+    async def _restore_context_if_needed(self, user_id: int) -> None:
+        """
+        Restore context from database if needed (lazy loading)
+
+        Args:
+            user_id: Telegram user ID
+        """
+        if not self._context_manager or not self._storage:
+            return
+
+        current_context = self._context_manager.get_context(user_id)
+
+        # If context is empty - try to load from database
+        if len(current_context) == 0:
+            conversation = await self._storage.get_conversation(user_id)
+            if conversation and conversation.messages:
+                # Convert Message objects to context format
+                context_messages = [
+                    {"role": msg.role, "content": msg.content} for msg in conversation.messages
+                ]
+                self._context_manager.load_context(user_id, context_messages)
+                logger.info(f"context_restored|user_id={user_id}|messages={len(context_messages)}")
+
     async def handle_text_message(self, message: Message) -> None:
         """Handle regular text messages
 
@@ -118,6 +141,9 @@ class MessageHandler:
         logger.info(
             f"user_text_message|user_id={ctx.user_id}|username={ctx.username}|message_length={len(ctx.text)}"
         )
+
+        # Restore context from DB if needed (lazy loading on first message)
+        await self._restore_context_if_needed(ctx.user_id)
 
         # Add user message to context
         if self._context_manager:

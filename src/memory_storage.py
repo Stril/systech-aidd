@@ -109,7 +109,7 @@ class MemoryStorage:
             f"total_messages={self._conversations[user_id].get_message_count()}"
         )
 
-    def get_conversation(self, user_id: int) -> Conversation | None:
+    async def get_conversation(self, user_id: int) -> Conversation | None:
         """
         Get user's conversation
 

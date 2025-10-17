@@ -164,7 +164,7 @@ async def test_add_message_to_conversation():
 
     await storage.add_message_to_conversation(123, message)
 
-    conversation = storage.get_conversation(123)
+    conversation = await storage.get_conversation(123)
     assert conversation is not None
     assert conversation.get_message_count() == 1
     assert conversation.messages[0].content == "Hello"
@@ -203,16 +203,17 @@ async def test_add_multiple_messages_to_conversation():
     for msg in messages:
         await storage.add_message_to_conversation(123, msg)
 
-    conversation = storage.get_conversation(123)
+    conversation = await storage.get_conversation(123)
     assert conversation.get_message_count() == 3
     assert len(conversation.messages) == 3
 
 
 @pytest.mark.unit
-def test_get_nonexistent_conversation():
+@pytest.mark.asyncio
+async def test_get_nonexistent_conversation():
     """Test getting a conversation that doesn't exist"""
     storage = MemoryStorage()
-    conversation = storage.get_conversation(999)
+    conversation = await storage.get_conversation(999)
     assert conversation is None
 
 
@@ -234,13 +235,13 @@ async def test_clear_conversation():
         )
         await storage.add_message_to_conversation(123, message)
 
-    conversation = storage.get_conversation(123)
+    conversation = await storage.get_conversation(123)
     assert conversation.get_message_count() == 5
 
     # Clear conversation
     await storage.clear_conversation(123)
 
-    conversation = storage.get_conversation(123)
+    conversation = await storage.get_conversation(123)
     assert conversation.get_message_count() == 0
 
 
@@ -280,8 +281,8 @@ async def test_multiple_users_separate_conversations():
         ),
     )
 
-    conv_123 = storage.get_conversation(123)
-    conv_456 = storage.get_conversation(456)
+    conv_123 = await storage.get_conversation(123)
+    conv_456 = await storage.get_conversation(456)
 
     assert conv_123.get_message_count() == 1
     assert conv_456.get_message_count() == 1

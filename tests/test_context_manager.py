@@ -125,3 +125,108 @@ def test_context_preserves_order():
     for i, (role, content) in enumerate(messages):
         assert context[i]["role"] == role
         assert context[i]["content"] == content
+
+
+@pytest.mark.unit
+def test_load_context_empty_list():
+    """Test loading context with empty message list"""
+    cm = ContextManager()
+    cm.load_context(123, [])
+
+    context = cm.get_context(123)
+    assert len(context) == 0
+
+
+@pytest.mark.unit
+def test_load_context_with_messages():
+    """Test loading context with several messages"""
+    cm = ContextManager()
+
+    messages = [
+        {"role": "user", "content": "Hello"},
+        {"role": "assistant", "content": "Hi there!"},
+        {"role": "user", "content": "How are you?"},
+    ]
+
+    cm.load_context(123, messages)
+
+    context = cm.get_context(123)
+    assert len(context) == 3
+    assert context[0]["role"] == "user"
+    assert context[0]["content"] == "Hello"
+    assert context[1]["role"] == "assistant"
+    assert context[1]["content"] == "Hi there!"
+    assert context[2]["role"] == "user"
+    assert context[2]["content"] == "How are you?"
+
+
+@pytest.mark.unit
+def test_load_context_exceeds_max_messages():
+    """Test that load_context trims to max_messages limit"""
+    cm = ContextManager(max_messages=3)
+
+    # Create 5 messages
+    messages = [
+        {"role": "user", "content": "Message 1"},
+        {"role": "assistant", "content": "Message 2"},
+        {"role": "user", "content": "Message 3"},
+        {"role": "assistant", "content": "Message 4"},
+        {"role": "user", "content": "Message 5"},
+    ]
+
+    cm.load_context(123, messages)
+
+    context = cm.get_context(123)
+    assert len(context) == 3
+    # Should keep last 3 messages
+    assert context[0]["content"] == "Message 3"
+    assert context[1]["content"] == "Message 4"
+    assert context[2]["content"] == "Message 5"
+
+
+@pytest.mark.unit
+def test_load_context_for_new_user():
+    """Test loading context for a user without existing context"""
+    cm = ContextManager()
+
+    messages = [
+        {"role": "user", "content": "First message"},
+        {"role": "assistant", "content": "Response"},
+    ]
+
+    # User 999 has no prior context
+    assert len(cm.get_context(999)) == 0
+
+    cm.load_context(999, messages)
+
+    context = cm.get_context(999)
+    assert len(context) == 2
+    assert context[0]["content"] == "First message"
+    assert context[1]["content"] == "Response"
+
+
+@pytest.mark.unit
+def test_load_context_overwrites_existing():
+    """Test that load_context overwrites existing context"""
+    cm = ContextManager()
+
+    # Add some messages manually
+    cm.add_message(123, "user", "Old message 1")
+    cm.add_message(123, "assistant", "Old message 2")
+
+    assert len(cm.get_context(123)) == 2
+
+    # Load new context - should replace old one
+    new_messages = [
+        {"role": "user", "content": "New message 1"},
+        {"role": "assistant", "content": "New message 2"},
+        {"role": "user", "content": "New message 3"},
+    ]
+
+    cm.load_context(123, new_messages)
+
+    context = cm.get_context(123)
+    assert len(context) == 3
+    assert context[0]["content"] == "New message 1"
+    assert context[1]["content"] == "New message 2"
+    assert context[2]["content"] == "New message 3"
