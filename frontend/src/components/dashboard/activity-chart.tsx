@@ -57,21 +57,21 @@ export function ActivityChart({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>Activity Chart</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Activity Chart</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               {period === "day"
                 ? "Activity over the last 24 hours"
                 : "Activity over the last 7 days"}
             </CardDescription>
           </div>
           <Tabs value={period} onValueChange={(v) => onPeriodChange(v as Period)}>
-            <TabsList>
-              <TabsTrigger value="day" disabled={isLoading}>
+            <TabsList className="w-full sm:w-auto">
+              <TabsTrigger value="day" disabled={isLoading} className="flex-1 text-xs sm:flex-initial sm:text-sm">
                 Last 24 hours
               </TabsTrigger>
-              <TabsTrigger value="week" disabled={isLoading}>
+              <TabsTrigger value="week" disabled={isLoading} className="flex-1 text-xs sm:flex-initial sm:text-sm">
                 Last 7 days
               </TabsTrigger>
             </TabsList>
@@ -80,15 +80,15 @@ export function ActivityChart({
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex h-[400px] items-center justify-center">
+          <div className="flex h-[250px] items-center justify-center sm:h-[350px] md:h-[400px]">
             <div className="text-muted-foreground">Loading...</div>
           </div>
         ) : (
-          <ChartContainer className="h-[400px]">
+          <ChartContainer className="h-[250px] sm:h-[350px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
               >
                 <defs>
                   <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">

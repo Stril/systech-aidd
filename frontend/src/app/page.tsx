@@ -25,7 +25,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 lg:p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
         <Card className="w-full">
           <CardHeader>
@@ -76,18 +76,18 @@ export default function Home() {
               </ul>
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button asChild>
+            <div className="flex flex-col gap-2 pt-4 sm:flex-row">
+              <Button asChild className="w-full sm:w-auto">
                 <a href="/dashboard">
                   Open Dashboard
                 </a>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="w-full sm:w-auto">
                 <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer">
                   API Документация
                 </a>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="w-full sm:w-auto">
                 <a
                   href="https://github.com/aidialogs/systech-aidd/tree/main"
                   target="_blank"

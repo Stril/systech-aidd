@@ -43,19 +43,19 @@ export function StatsCards({ summary }: StatsCardsProps): JSX.Element {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
         <Card key={stat.title}>
-          <CardHeader>
-            <CardDescription>{stat.title}</CardDescription>
-            <CardTitle className="text-4xl font-bold">
+          <CardHeader className="pb-3">
+            <CardDescription className="text-xs sm:text-sm">{stat.title}</CardDescription>
+            <CardTitle className="text-2xl font-bold sm:text-3xl md:text-4xl">
               {stat.decimals
                 ? stat.value.toFixed(stat.decimals)
                 : formatNumber(stat.value)}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{stat.description}</p>
+            <p className="text-xs text-muted-foreground sm:text-sm">{stat.description}</p>
           </CardContent>
         </Card>
       ))}
