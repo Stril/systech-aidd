@@ -2,6 +2,58 @@
 
 Этот файл содержит примеры запросов к Bot Statistics API для тестирования и разработки.
 
+## Конфигурация
+
+API поддерживает два режима работы: Mock (тестовые данные) и Real (реальная база данных).
+
+### Переменные окружения (.env)
+
+```bash
+# Режим работы StatCollector
+USE_MOCK_STAT_COLLECTOR=false  # false = реальная БД, true = Mock данные (по умолчанию: false)
+
+# Путь к базе данных (используется только при USE_MOCK_STAT_COLLECTOR=false)
+DATABASE_URL=sqlite+aiosqlite:///data/bot.db
+```
+
+### Примеры конфигурации
+
+**Использование Mock данных (для разработки frontend):**
+
+```bash
+# .env
+USE_MOCK_STAT_COLLECTOR=true
+```
+
+API будет возвращать жестко заданные тестовые данные.
+
+**Использование реальной базы данных (production):**
+
+```bash
+# .env
+USE_MOCK_STAT_COLLECTOR=false
+DATABASE_URL=sqlite+aiosqlite:///data/bot.db
+```
+
+API будет возвращать реальные данные из SQLite базы. Убедитесь, что:
+1. База данных существует по указанному пути
+2. В базе есть данные (пользователи, диалоги, сообщения)
+3. Бот запущен и обрабатывает сообщения
+
+### Запуск с разными конфигурациями
+
+```bash
+# С реальной БД (по умолчанию)
+make api-run
+
+# С Mock данными (установите переменную перед запуском)
+# PowerShell
+$env:USE_MOCK_STAT_COLLECTOR="true"; make api-run
+
+# Bash
+USE_MOCK_STAT_COLLECTOR=true make api-run
+```
+
 ## Базовый URL
 
 ```

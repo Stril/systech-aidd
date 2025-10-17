@@ -203,9 +203,22 @@ make api-test
 
 - `StatCollector` (ABC) - абстрактный интерфейс для сборщиков статистики
 - `MockStatCollector` - Mock реализация с жестко заданными тестовыми данными
-- `RealStatCollector` (TODO в FE-SP-5) - реальная реализация работающая с БД
+- `RealStatCollector` ✅ (Реализовано в FE-SP-4) - реальная реализация работающая с БД
 
-Текущая реализация использует `MockStatCollector` с фиксированными данными для упрощения отладки frontend.
+### Переключение между Mock и Real
+
+Режим работы контролируется через переменную окружения `.env`:
+
+```bash
+# .env file
+USE_MOCK_STAT_COLLECTOR=false  # false = использовать реальную БД, true = Mock данные
+DATABASE_URL=sqlite+aiosqlite:///data/bot.db
+```
+
+- `USE_MOCK_STAT_COLLECTOR=true` - использует `MockStatCollector` с фиксированными тестовыми данными
+- `USE_MOCK_STAT_COLLECTOR=false` (по умолчанию) - использует `RealStatCollector` с данными из SQLite базы
+
+Переключение происходит автоматически при запуске API сервера без изменений кода.
 
 ## CORS
 

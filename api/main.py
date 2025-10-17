@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.mock_stat_collector import MockStatCollector
 from api.models import StatsResponse
+from api.real_stat_collector import RealStatCollector
 from api.stat_collector import StatCollector
+from src.settings import Settings
 
 app = FastAPI(
     title="Bot Statistics API",
@@ -22,8 +24,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize collector
-collector: StatCollector = MockStatCollector()
+# Initialize collector based on configuration
+settings = Settings()
+
+if settings.USE_MOCK_STAT_COLLECTOR:
+    collector: StatCollector = MockStatCollector()
+else:
+    collector: StatCollector = RealStatCollector(database_url=settings.DATABASE_URL)
 
 
 @app.get("/api/stats", response_model=StatsResponse)
@@ -55,3 +62,10 @@ async def health() -> dict[str, str]:
         Health status
     """
     return {"status": "ok"}
+
+
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    """Cleanup on application shutdown"""
+    if hasattr(collector, "close"):
+        await collector.close()

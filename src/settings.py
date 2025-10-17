@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///data/bot.db"
 
+    # API StatCollector mode
+    USE_MOCK_STAT_COLLECTOR: bool = False  # True = Mock, False = Real
+
     @property
     def system_prompt(self) -> str:
         """Load system prompt from file
