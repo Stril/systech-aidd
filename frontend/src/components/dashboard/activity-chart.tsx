@@ -66,14 +66,10 @@ export function ActivityChart({
                 : "Activity over the last 7 days"}
             </CardDescription>
           </div>
-          <Tabs value={period} onValueChange={(v) => onPeriodChange(v as Period)}>
-            <TabsList className="w-full sm:w-auto">
-              <TabsTrigger value="day" disabled={isLoading} className="flex-1 text-xs sm:flex-initial sm:text-sm">
-                Last 24 hours
-              </TabsTrigger>
-              <TabsTrigger value="week" disabled={isLoading} className="flex-1 text-xs sm:flex-initial sm:text-sm">
-                Last 7 days
-              </TabsTrigger>
+          <Tabs value={period} onValueChange={(value) => onPeriodChange(value as Period)}>
+            <TabsList>
+              <TabsTrigger value="day">Day</TabsTrigger>
+              <TabsTrigger value="week">Week</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
