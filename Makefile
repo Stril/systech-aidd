@@ -68,3 +68,19 @@ setup:
 	uv sync --all-extras
 	@echo "✅ Виртуальное окружение создано и зависимости установлены"
 
+# Запуск API сервера
+api-run:
+	uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Открыть API документацию
+api-docs:
+	@echo "API docs available at http://localhost:8000/docs"
+	@echo "ReDoc available at http://localhost:8000/redoc"
+
+# Тестовый запрос к API (day)
+api-test:
+	@echo "Testing /api/stats?period=day..."
+	@curl -s "http://localhost:8000/api/stats?period=day" | python -m json.tool
+	@echo "\n\nTesting /api/stats?period=week..."
+	@curl -s "http://localhost:8000/api/stats?period=week" | python -m json.tool
+
