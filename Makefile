@@ -84,3 +84,25 @@ api-test:
 	@echo "\n\nTesting /api/stats?period=week..."
 	@curl -s "http://localhost:8000/api/stats?period=week" | python -m json.tool
 
+# Frontend commands
+frontend-install:
+	cd frontend && pnpm install
+
+frontend-dev:
+	cd frontend && pnpm dev
+
+frontend-build:
+	cd frontend && pnpm build
+
+frontend-lint:
+	cd frontend && pnpm lint
+
+frontend-type-check:
+	cd frontend && pnpm tsc --noEmit
+
+frontend-format:
+	cd frontend && pnpm format
+
+frontend-quality: frontend-lint frontend-type-check
+	@echo "✅ Frontend quality checks passed"
+
