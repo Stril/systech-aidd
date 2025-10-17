@@ -1,11 +1,17 @@
 /**
  * Dashboard Layout Component
- * Provides header with GitHub link, title, and theme toggle
+ * Provides header with GitHub link, title, theme toggle, and chat
  */
+
+"use client";
+
+import { useState } from "react";
 
 import { Github } from "lucide-react";
 import Link from "next/link";
 
+import { ChatWindow } from "@/components/chat/chat-window";
+import { FloatingChatButton } from "@/components/chat/floating-chat-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +20,8 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -34,6 +42,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element
         </div>
       </header>
       <main className="container px-4 py-6 md:px-8">{children}</main>
+
+      {/* Floating Chat */}
+      <FloatingChatButton
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        isOpen={isChatOpen}
+      />
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
