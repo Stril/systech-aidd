@@ -33,8 +33,17 @@ ENV API_URL=http://localhost:8000
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the application
-RUN pnpm build
+# Build the application with verbose output
+RUN echo "=== Building Next.js application ===" && \
+    echo "Node version:" && node --version && \
+    echo "Pnpm version:" && pnpm --version && \
+    echo "Files in /app:" && ls -la && \
+    echo "Starting build..." && \
+    pnpm build --verbose 2>&1 || (echo "=== BUILD FAILED ===" && \
+    echo "Package.json:" && cat package.json && \
+    echo "Next config:" && cat next.config.mjs && \
+    echo "Checking src directory:" && ls -la src/ && \
+    exit 1)
 
 # Stage 3: Runner
 FROM node:20-slim AS runner
