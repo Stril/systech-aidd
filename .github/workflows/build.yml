@@ -62,6 +62,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}-${{ matrix.service }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}-${{ matrix.service }}:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
