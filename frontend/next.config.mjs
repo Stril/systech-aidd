@@ -4,9 +4,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   
-  // Standalone output for Docker (optimized production build)
-  output: 'standalone',
-  
   // Disable ESLint and TypeScript checks during build in CI
   eslint: {
     ignoreDuringBuilds: true,

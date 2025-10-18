@@ -1,73 +1,40 @@
-# Multi-stage Dockerfile for Next.js with standalone output
-# Based on official Next.js Docker example
+# Simplified single-stage Dockerfile for Next.js
+FROM node:20-slim
 
-# Stage 1: Dependencies
-FROM node:20-slim AS deps
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@latest
 
-# Copy dependency files
+# Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install ALL dependencies (including dev for build)
+RUN pnpm install --no-frozen-lockfile
 
-# Stage 2: Builder
-FROM node:20-slim AS builder
-WORKDIR /app
-
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy application code
+# Copy all application code
 COPY . .
 
-# Set build-time environment variables
+# Set environment variables
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
-ENV API_URL=http://localhost:8000
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the application with verbose output
-RUN echo "=== Building Next.js application ===" && \
-    echo "Node version:" && node --version && \
-    echo "Pnpm version:" && pnpm --version && \
-    echo "Files in /app:" && ls -la && \
-    echo "Starting build..." && \
-    pnpm build --verbose 2>&1 || (echo "=== BUILD FAILED ===" && \
-    echo "Package.json:" && cat package.json && \
-    echo "Next config:" && cat next.config.mjs && \
-    echo "Checking src directory:" && ls -la src/ && \
-    exit 1)
+# Build with maximum output
+RUN set -x && \
+    echo "=== Environment ===" && \
+    env | grep -E "NODE|NEXT" && \
+    echo "=== PWD ===" && \
+    pwd && \
+    echo "=== Files ===" && \
+    ls -la && \
+    echo "=== Source files ===" && \
+    ls -la src/ || true && \
+    echo "=== Building ===" && \
+    pnpm run build
 
-# Stage 3: Runner
-FROM node:20-slim AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-
-# Copy necessary files
-# Note: public folder is optional, create it if doesn't exist
-RUN mkdir -p ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+# Expose port
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# Start production server
-CMD ["node", "server.js"]
+# Start server
+CMD ["pnpm", "start"]
