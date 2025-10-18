@@ -1,8 +1,8 @@
 # Docker Compose для использования образов из GitHub Container Registry
-# 
+#
 # Использование:
 #   docker-compose -f docker-compose.registry.yml up -d
-# 
+#
 # Примечание: Замените <owner> на ваш GitHub username/organization
 
 services:

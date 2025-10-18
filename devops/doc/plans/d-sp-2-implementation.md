@@ -89,7 +89,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       matrix:
         include:
@@ -102,7 +102,7 @@ jobs:
           - service: frontend
             dockerfile: Dockerfile.frontend
             context: ./frontend
-    
+
     steps:
       - checkout
       - Docker Buildx setup
@@ -129,11 +129,11 @@ services:
   api:
     image: ghcr.io/<owner>/systech-aidd-1-api:latest
     build: ~  # Отключить локальную сборку
-  
+
   bot:
     image: ghcr.io/<owner>/systech-aidd-1-bot:latest
     build: ~
-  
+
   frontend:
     image: ghcr.io/<owner>/systech-aidd-1-frontend:latest
     build: ~
@@ -156,7 +156,7 @@ services:
 ```yaml
 # Локальная сборка (по умолчанию):
 #   docker-compose up --build
-# 
+#
 # Использование образов из registry:
 #   docker-compose -f docker-compose.registry.yml up
 ```
@@ -176,7 +176,7 @@ services:
    - Для каждого образа (bot, api, frontend):
      - Package settings → Danger Zone → Change visibility
      - Выбрать "Public"
-   
+
 3. **Проверка публичного доступа:**
    ```bash
    docker pull ghcr.io/<owner>/systech-aidd-1-bot:latest
@@ -330,6 +330,6 @@ systech-aidd-1/
 
 ---
 
-**Автор:** AI Assistant (Cursor)  
+**Автор:** AI Assistant (Cursor)
 **Дата создания:** 18 октября 2025
 

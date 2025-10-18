@@ -3,9 +3,9 @@
 # Использование:
 #   1. Скопируйте этот файл:
 #      cp docker-compose.override.yml.example docker-compose.override.yml
-#   
+#
 #   2. Замените <owner> на ваш GitHub username/organization
-#   
+#
 #   3. Запустите docker-compose как обычно:
 #      docker-compose up -d
 #

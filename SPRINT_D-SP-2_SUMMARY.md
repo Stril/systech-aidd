@@ -1,7 +1,7 @@
 # Итоговый отчет: Спринт D-SP-2 - Build & Publish
 
-**Дата выполнения:** 18 октября 2025  
-**Статус:** ✅ Завершено  
+**Дата выполнения:** 18 октября 2025
+**Статус:** ✅ Завершено
 **Ветка:** `feature/d-sp-2-ci-cd`
 
 ---
@@ -320,8 +320,8 @@ cc877ed - ci: implement D-SP-2 GitHub Actions CI/CD pipeline
 
 ---
 
-**Автор:** AI Assistant (Cursor)  
-**Дата:** 18 октября 2025  
-**Commit:** cc877ed  
+**Автор:** AI Assistant (Cursor)
+**Дата:** 18 октября 2025
+**Commit:** cc877ed
 **Ветка:** feature/d-sp-2-ci-cd
 

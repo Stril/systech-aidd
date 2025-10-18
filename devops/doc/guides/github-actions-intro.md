@@ -31,7 +31,7 @@ jobs:                                   # Задачи для выполнени
     steps:                             # Шаги выполнения
       - name: Checkout code
         uses: actions/checkout@v4      # Использование готового action
-      
+
       - name: Run command
         run: echo "Hello World"        # Выполнение команды
 ```
@@ -56,7 +56,7 @@ on:
     branches: [main, develop]          # При push в main или develop
     paths:
       - 'src/**'                        # Только если изменились файлы в src/
-  
+
   pull_request:
     branches: [main]                    # При создании PR в main
     types: [opened, synchronize]        # При открытии или обновлении PR
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: npm run lint
-  
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: npm run build
-  
+
   deploy:
     runs-on: ubuntu-latest
     needs: build                        # Запустится только после успешного build
@@ -194,10 +194,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Build Docker image
         run: docker build -t myapp:latest .
-      
+
       - name: Run tests in container
         run: docker run myapp:latest npm test
 ```
@@ -213,17 +213,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3  # Расширенные возможности сборки
-      
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}  # Автоматически доступен
-      
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -310,17 +310,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install uv
           uv sync
-      
+
       - name: Run tests
         run: make test
 ```
@@ -347,7 +347,7 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy to ${{ inputs.environment }}
         run: ./deploy.sh ${{ inputs.environment }}
 ```
@@ -369,15 +369,15 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: docker/setup-buildx-action@v3
-      
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - uses: docker/build-push-action@v5
         with:
           context: .

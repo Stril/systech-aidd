@@ -1,7 +1,7 @@
 # Чеклист завершения Спринта D-SP-2
 
-**Дата:** 18 октября 2025  
-**Статус:** ⏳ В процессе проверки  
+**Дата:** 18 октября 2025
+**Статус:** ⏳ В процессе проверки
 **PR:** https://github.com/Stril/systech-aidd/pull/[номер]
 
 ---
@@ -21,10 +21,10 @@ https://github.com/Stril/systech-aidd/actions
 ### 1.3 Проверьте статус всех 3 jobs
 
 - [ ] `build-and-push (bot)` - зеленый ✅
-- [ ] `build-and-push (api)` - зеленый ✅  
+- [ ] `build-and-push (api)` - зеленый ✅
 - [ ] `build-and-push (frontend)` - зеленый ✅
 
-**Если все зеленые** → переходите к Этапу 2  
+**Если все зеленые** → переходите к Этапу 2
 **Если что-то красное** → смотрите логи, сообщите об ошибке
 
 ---
@@ -119,7 +119,7 @@ docker pull ghcr.io/stril/systech-aidd-bot:latest
 # API
 docker pull ghcr.io/stril/systech-aidd-api:latest
 
-# Frontend  
+# Frontend
 docker pull ghcr.io/stril/systech-aidd-frontend:latest
 ```
 
@@ -172,7 +172,7 @@ docker-compose -f docker-compose.registry.yml pull
 ```
 [+] Pulling 3/3
  ✔ api Pulled
- ✔ bot Pulled  
+ ✔ bot Pulled
  ✔ frontend Pulled
 ```
 
@@ -324,6 +324,6 @@ git push origin main
 
 ---
 
-**Дата завершения:** _____________  
+**Дата завершения:** _____________
 **Подпись:** _____________
 

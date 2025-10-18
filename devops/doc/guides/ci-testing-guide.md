@@ -483,11 +483,11 @@ jobs:
   lint:
     - name: Run linter
       run: make lint
-  
+
   test:
     - name: Run tests
       run: make test
-  
+
   build:
     needs: [lint, test]  # Собирать только если lint и tests прошли
 ```
