@@ -17,6 +17,8 @@ class SessionData:
     context_manager: ContextManager
     mode: str
     created_at: datetime
+    username: str
+    user_id: int
 
 
 class ChatSessionManager:
@@ -32,11 +34,13 @@ class ChatSessionManager:
         self._max_context_messages = max_context_messages
         logger.info(f"chat_session_manager|initialized|max_context={max_context_messages}")
 
-    def create_session(self, mode: str) -> str:
+    def create_session(self, mode: str, username: str, user_id: int) -> str:
         """Create a new chat session
 
         Args:
             mode: Chat mode ('normal' or 'admin')
+            username: Username in format 'User_NNNNN'
+            user_id: User ID (negative for web users)
 
         Returns:
             Session ID (UUID string)
@@ -48,9 +52,14 @@ class ChatSessionManager:
             context_manager=context_manager,
             mode=mode,
             created_at=datetime.now(),
+            username=username,
+            user_id=user_id,
         )
 
-        logger.info(f"chat_session_manager|session_created|session_id={session_id}|mode={mode}")
+        logger.info(
+            f"chat_session_manager|session_created|session_id={session_id}|"
+            f"mode={mode}|username={username}|user_id={user_id}"
+        )
         return session_id
 
     def session_exists(self, session_id: str) -> bool:
@@ -79,8 +88,8 @@ class ChatSessionManager:
         if session_id not in self._sessions:
             raise KeyError(f"Session not found: {session_id}")
 
-        # Use dummy user_id (0) for web chat sessions
-        context = self._sessions[session_id].context_manager.get_context(user_id=0)
+        session = self._sessions[session_id]
+        context = session.context_manager.get_context(user_id=session.user_id)
         logger.info(f"chat_session_manager|get_context|session_id={session_id}|length={len(context)}")
         return context
 
@@ -98,8 +107,8 @@ class ChatSessionManager:
         if session_id not in self._sessions:
             raise KeyError(f"Session not found: {session_id}")
 
-        # Use dummy user_id (0) for web chat sessions
-        self._sessions[session_id].context_manager.add_message(user_id=0, role=role, content=content)
+        session = self._sessions[session_id]
+        session.context_manager.add_message(user_id=session.user_id, role=role, content=content)
         logger.info(
             f"chat_session_manager|message_added|session_id={session_id}|"
             f"role={role}|content_length={len(content)}"
@@ -136,4 +145,22 @@ class ChatSessionManager:
             raise KeyError(f"Session not found: {session_id}")
 
         return self._sessions[session_id].mode
+
+    def get_session_user(self, session_id: str) -> tuple[str, int]:
+        """Get session user information
+
+        Args:
+            session_id: Session identifier
+
+        Returns:
+            Tuple of (username, user_id)
+
+        Raises:
+            KeyError: If session doesn't exist
+        """
+        if session_id not in self._sessions:
+            raise KeyError(f"Session not found: {session_id}")
+
+        session = self._sessions[session_id]
+        return (session.username, session.user_id)
 

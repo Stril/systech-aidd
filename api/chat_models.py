@@ -14,6 +14,7 @@ class ChatSessionCreate(BaseModel):
     """Request to create a new chat session"""
 
     mode: str = Field(..., pattern="^(normal|admin)$", description="Chat mode: 'normal' or 'admin'")
+    username: str = Field(..., min_length=10, max_length=10, description="Username in format 'User_NNNNN'")
 
 
 class ChatSessionInfo(BaseModel):
@@ -21,6 +22,8 @@ class ChatSessionInfo(BaseModel):
 
     session_id: str = Field(..., description="Unique session identifier (UUID)")
     mode: str = Field(..., description="Chat mode: 'normal' or 'admin'")
+    username: str = Field(..., description="Username in format 'User_NNNNN'")
+    user_id: int = Field(..., description="User ID (negative for web users)")
 
 
 class ChatRequest(BaseModel):

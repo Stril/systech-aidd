@@ -50,13 +50,17 @@ class ChatHandler:
             KeyError: If session doesn't exist
             Exception: If message processing fails
         """
-        logger.info(
-            f"chat_handler|handle_message|session_id={session_id}|"
-            f"mode={mode}|message_length={len(message)}"
-        )
-
         if not self._session_manager.session_exists(session_id):
             raise KeyError(f"Session not found: {session_id}")
+
+        # Get username and user_id from session for logging
+        username, user_id = self._session_manager.get_session_user(session_id)
+
+        logger.info(
+            f"chat_handler|handle_message|session_id={session_id}|"
+            f"username={username}|user_id={user_id}|"
+            f"mode={mode}|message_length={len(message)}"
+        )
 
         # Add user message to session
         self._session_manager.add_message(session_id, "user", message)

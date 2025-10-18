@@ -14,10 +14,17 @@ import type { ChatMessage, ChatMode } from "@/types/chat";
 
 import { Button } from "@/components/ui/button";
 import { createChatSession, sendMessage } from "@/lib/chat-api";
+import {
+  generateUsername,
+  getUsernameForMode,
+  setUsernameForMode,
+  validateUsername,
+} from "@/lib/user-storage";
 
 import { ChatMessageComponent } from "./chat-message";
 import { ModeToggle } from "./mode-toggle";
 import { TypingIndicator } from "./typing-indicator";
+import { UserNameBadge } from "./user-name-badge";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -31,6 +38,8 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [userId, setUserId] = useState<number | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -40,12 +49,25 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps): JSX.Element {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Create session on mount
+  // Create session on mount or mode change
   useEffect(() => {
     if (isOpen && !sessionId) {
-      createChatSession(mode)
+      // 1. Get username from localStorage for current mode
+      let currentUsername = getUsernameForMode(mode);
+
+      // 2. If no username - generate new one
+      if (!currentUsername) {
+        currentUsername = generateUsername();
+        setUsernameForMode(mode, currentUsername);
+      }
+
+      setUsername(currentUsername);
+
+      // 3. Create session with username
+      createChatSession(mode, currentUsername)
         .then((session) => {
           setSessionId(session.session_id);
+          setUserId(session.user_id);
         })
         .catch((err) => {
           console.error("Failed to create session:", err);
@@ -110,10 +132,20 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps): JSX.Element {
     setMessages([]);
     setError(null);
 
-    // Create new session with new mode
+    // Get or generate username for new mode
+    let newUsername = getUsernameForMode(newMode);
+    if (!newUsername) {
+      newUsername = generateUsername();
+      setUsernameForMode(newMode, newUsername);
+    }
+
+    setUsername(newUsername);
+
+    // Create new session with new mode and username
     try {
-      const session = await createChatSession(newMode);
+      const session = await createChatSession(newMode, newUsername);
       setSessionId(session.session_id);
+      setUserId(session.user_id);
     } catch (err) {
       console.error("Failed to create session:", err);
       setError("Failed to switch mode");
@@ -124,6 +156,29 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps): JSX.Element {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleUsernameChange = async (newUsername: string): Promise<void> => {
+    // Validate format
+    if (!validateUsername(newUsername)) {
+      throw new Error("Invalid username format");
+    }
+
+    setUsernameForMode(mode, newUsername);
+    setUsername(newUsername);
+    setMessages([]);
+    setError(null);
+
+    try {
+      // Recreate session with new username
+      const session = await createChatSession(mode, newUsername);
+      setSessionId(session.session_id);
+      setUserId(session.user_id);
+    } catch (err) {
+      console.error("Failed to change username:", err);
+      setError("Failed to change username");
+      throw err;
     }
   };
 
@@ -141,6 +196,9 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps): JSX.Element {
           <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold">AI Assistant</h2>
+              {username && (
+                <UserNameBadge username={username} onUsernameChange={handleUsernameChange} />
+              )}
               <ModeToggle mode={mode} onModeChange={handleModeChange} />
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">

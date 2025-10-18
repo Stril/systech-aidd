@@ -11,18 +11,23 @@ def test_create_session() -> None:
     manager = ChatSessionManager(max_context_messages=5)
 
     # Create session
-    session_id = manager.create_session(mode="normal")
+    session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Verify session exists
     assert manager.session_exists(session_id)
     assert manager.get_session_mode(session_id) == "normal"
+
+    # Verify user info
+    username, user_id = manager.get_session_user(session_id)
+    assert username == "User_12345"
+    assert user_id == -12345
 
 
 @pytest.mark.unit
 def test_session_context() -> None:
     """Test adding and retrieving session context"""
     manager = ChatSessionManager(max_context_messages=5)
-    session_id = manager.create_session(mode="normal")
+    session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Initially empty
     context = manager.get_session_context(session_id)
@@ -45,7 +50,7 @@ def test_session_context() -> None:
 def test_clear_session() -> None:
     """Test clearing a session"""
     manager = ChatSessionManager(max_context_messages=5)
-    session_id = manager.create_session(mode="normal")
+    session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Add some messages
     manager.add_message(session_id, "user", "Test message")
@@ -77,7 +82,7 @@ def test_session_not_found() -> None:
 def test_context_trimming() -> None:
     """Test that context is trimmed to max_messages"""
     manager = ChatSessionManager(max_context_messages=3)
-    session_id = manager.create_session(mode="normal")
+    session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Add more messages than max
     for i in range(5):
@@ -96,8 +101,8 @@ def test_multiple_sessions() -> None:
     manager = ChatSessionManager(max_context_messages=5)
 
     # Create multiple sessions
-    session1 = manager.create_session(mode="normal")
-    session2 = manager.create_session(mode="admin")
+    session1 = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
+    session2 = manager.create_session(mode="admin", username="User_67890", user_id=-67890)
 
     # Add messages to each
     manager.add_message(session1, "user", "Session 1 message")
@@ -111,3 +116,26 @@ def test_multiple_sessions() -> None:
     assert len(context2) == 1
     assert context1[0]["content"] == "Session 1 message"
     assert context2[0]["content"] == "Session 2 message"
+
+
+@pytest.mark.unit
+def test_get_session_user() -> None:
+    """Test getting session user information"""
+    manager = ChatSessionManager(max_context_messages=5)
+    session_id = manager.create_session(mode="normal", username="User_54321", user_id=-54321)
+
+    # Get user info
+    username, user_id = manager.get_session_user(session_id)
+
+    # Verify
+    assert username == "User_54321"
+    assert user_id == -54321
+
+
+@pytest.mark.unit
+def test_get_session_user_not_found() -> None:
+    """Test get_session_user raises KeyError for non-existent session"""
+    manager = ChatSessionManager(max_context_messages=5)
+
+    with pytest.raises(KeyError, match="Session not found"):
+        manager.get_session_user("non-existent-id")

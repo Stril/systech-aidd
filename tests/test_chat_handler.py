@@ -19,6 +19,7 @@ async def test_handle_message_normal_mode() -> None:
     mock_text2sql = Mock()
     mock_session_manager = Mock()
     mock_session_manager.session_exists.return_value = True
+    mock_session_manager.get_session_user.return_value = ("User_12345", -12345)
     mock_session_manager.get_session_context.return_value = [{"role": "user", "content": "Hi"}]
     mock_session_manager.add_message = Mock()
 
@@ -58,6 +59,7 @@ async def test_handle_message_admin_mode() -> None:
 
     mock_session_manager = Mock()
     mock_session_manager.session_exists.return_value = True
+    mock_session_manager.get_session_user.return_value = ("User_12345", -12345)
     mock_session_manager.add_message = Mock()
 
     # Create handler
@@ -117,6 +119,7 @@ async def test_handle_message_openai_error() -> None:
     mock_text2sql = Mock()
     mock_session_manager = Mock()
     mock_session_manager.session_exists.return_value = True
+    mock_session_manager.get_session_user.return_value = ("User_12345", -12345)
     mock_session_manager.get_session_context.return_value = []
     mock_session_manager.add_message = Mock()
 
@@ -145,6 +148,7 @@ async def test_handle_message_text2sql_error() -> None:
 
     mock_session_manager = Mock()
     mock_session_manager.session_exists.return_value = True
+    mock_session_manager.get_session_user.return_value = ("User_12345", -12345)
     mock_session_manager.add_message = Mock()
 
     # Create handler

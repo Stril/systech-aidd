@@ -13,6 +13,8 @@ export interface ChatMessage {
 export interface ChatSessionInfo {
   session_id: string;
   mode: ChatMode;
+  username: string;  // NEW
+  user_id: number;   // NEW: -12345
 }
 
 export interface ChatResponse {
@@ -28,5 +30,6 @@ export interface ChatRequest {
 
 export interface ChatSessionCreate {
   mode: ChatMode;
+  username: string;  // NEW: "User_12345"
 }
 
