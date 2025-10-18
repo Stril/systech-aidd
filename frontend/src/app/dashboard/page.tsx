@@ -7,6 +7,10 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { getStats } from "@/lib/api";
 
+// Force dynamic rendering (SSR) instead of static generation
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Dashboard(): Promise<JSX.Element> {
   try {
     // Load initial stats for "day" period

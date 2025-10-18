@@ -39,7 +39,39 @@ Telegram-бот с интеграцией LLM для помощи в разли�
 - **mypy** - статическая типизация в strict mode
 - **Docker + docker-compose** - контейнеризация приложения
 
-## 🚀 Быстрый старт
+## 🐳 Быстрый старт через Docker (рекомендуется)
+
+### Для всех платформ (Windows/macOS/Linux)
+
+**Требования:** Docker Desktop или Docker Engine с Docker Compose v2+
+
+```bash
+# 1. Создайте .env файл
+cp .env.example .env
+# Отредактируйте .env и заполните токены (TELEGRAM_BOT_TOKEN, OPENAI_API_KEY)
+
+# 2. Запустите все сервисы одной командой
+docker-compose up --build
+
+# 3. Готово! Сервисы доступны:
+#    - Bot: работает в фоне (отправьте сообщение боту в Telegram)
+#    - API: http://localhost:8000/docs
+#    - Frontend: http://localhost:3000
+```
+
+**Управление:**
+```bash
+docker-compose up -d          # Запуск в фоне
+docker-compose logs -f        # Просмотр логов
+docker-compose down           # Остановка
+docker-compose restart        # Перезапуск
+```
+
+📖 **Подробная документация:** [devops/doc/guides/docker-setup.md](devops/doc/guides/docker-setup.md)
+
+---
+
+## 🛠️ Альтернатива: Локальный запуск без Docker
 
 ### 1. Предварительные требования
 
@@ -469,38 +501,55 @@ cp backups/bot_YYYYMMDD_HHMMSS.db data/bot.db
 - **Продакшн**: `data/bot.db`
 - **Тесты**: in-memory SQLite (`sqlite+aiosqlite:///:memory:`)
 
-## 🐳 Docker
+## 🐳 Docker контейнеризация
 
-Проект поддерживает запуск через Docker с полной изоляцией окружения.
+Проект полностью контейнеризован и поддерживает запуск всех сервисов (Bot, API, Frontend) через Docker Compose.
 
-### Запуск через Docker Compose
+### Архитектура
+
+- **3 сервиса:** Bot (Telegram), API (FastAPI), Frontend (Next.js)
+- **Shared SQLite:** База данных доступна Bot и API через общий volume
+- **Автоматические миграции:** Применяются при старте контейнеров
+- **Production-ready:** Простые Dockerfile для быстрого MVP
+
+### Быстрый запуск
 
 ```bash
-# Сборка и запуск
+# Создать .env из шаблона
+cp .env.example .env
+
+# Запустить все сервисы
 docker-compose up --build
 
-# Запуск в фоновом режиме
+# В фоновом режиме
 docker-compose up -d
 
 # Просмотр логов
-docker-compose logs -f bot
+docker-compose logs -f
 
 # Остановка
 docker-compose down
 ```
 
-### Особенности
+### Доступность сервисов
 
-- **Multi-stage build** - оптимизированный размер образа
-- **Volume для БД** - `./data:/app/data` (персистентность между перезапусками)
-- **Volume для логов** - `./logs:/app/logs`
-- **Автоматические миграции** - применяются при старте контейнера
+- **API Documentation:** http://localhost:8000/docs
+- **Frontend Dashboard:** http://localhost:3000
+- **Bot:** Работает в фоне, пишет логи в `./logs/`
 
-### Dockerfile
+### Volumes
 
-- Base image: `python:3.11-slim`
-- Менеджер зависимостей: `uv`
-- Миграции выполняются автоматически при старте
+- `./data:/app/data` - SQLite database (персистентность между перезапусками)
+- `./logs:/app/logs` - Логи всех сервисов
+
+### Особенности SQLite в Docker
+
+SQLite настроен для multi-process доступа:
+- WAL (Write-Ahead Logging) mode для параллельного чтения/записи
+- Увеличенный timeout (30s) для избежания "database is locked"
+- Shared volume между Bot и API контейнерами
+
+📖 **Полное руководство:** [devops/doc/guides/docker-setup.md](devops/doc/guides/docker-setup.md)
 
 ## 📄 Лицензия
 

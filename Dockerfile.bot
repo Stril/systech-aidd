@@ -1,7 +1,6 @@
-# Multi-stage build for LLM Telegram Bot
+# Simple Dockerfile for Telegram Bot (Python 3.11 + uv)
 
-# Builder stage
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -11,20 +10,8 @@ RUN pip install --no-cache-dir uv
 # Copy dependency files
 COPY pyproject.toml ./
 
-# Install dependencies
+# Install dependencies (production only)
 RUN uv sync --no-dev
-
-# Runtime stage
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install uv in runtime
-RUN pip install --no-cache-dir uv
-
-# Copy from builder
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/pyproject.toml /app/pyproject.toml
 
 # Copy application code
 COPY src/ /app/src/
@@ -32,7 +19,7 @@ COPY system_prompt.txt /app/system_prompt.txt
 COPY migrations/ /app/migrations/
 COPY alembic.ini /app/alembic.ini
 
-# Create data directory
+# Create data and logs directories
 RUN mkdir -p /app/data /app/logs
 
 # Set environment

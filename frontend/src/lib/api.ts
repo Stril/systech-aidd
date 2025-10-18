@@ -5,7 +5,13 @@
 
 import type { HealthResponse, Period, StatsResponse } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Use different URLs for server-side (Docker) and client-side (browser)
+// Server-side: use Docker service name 'api'
+// Client-side: use localhost for browser
+const API_BASE_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL || "http://api:8000" // Server-side (SSR in Docker)
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"; // Client-side (browser)
 
 class ApiError extends Error {
   constructor(

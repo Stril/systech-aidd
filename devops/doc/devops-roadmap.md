@@ -24,7 +24,7 @@
 
 | Код | Название | Статус | Цель и описание | Состав работ | План |
 |-----|----------|--------|-----------------|--------------|------|
-| **D-SP-1** | Basic Docker Setup | 📋 Планируется | Запустить все сервисы локально через docker-compose одной командой. MVP контейнеризация для быстрого старта разработки | • Создание Dockerfile для каждого сервиса<br>• Настройка docker-compose.yml<br>• Конфигурация .dockerignore<br>• Настройка SQLite volume<br>• Тестирование локального запуска | |
+| **D-SP-1** | Basic Docker Setup | ✅ Завершено | Запустить все сервисы локально через docker-compose одной командой. MVP контейнеризация для быстрого старта разработки | • Создание Dockerfile для каждого сервиса<br>• Настройка docker-compose.yml<br>• Конфигурация .dockerignore<br>• Настройка SQLite volume<br>• Тестирование локального запуска | [План реализации](plans/d-sp-1-implementation.md) |
 | **D-SP-2** | Build & Publish | 📋 Планируется | Автоматическая сборка и публикация Docker образов в GitHub Container Registry при push в main ветку | • Создание GitHub Actions workflow для сборки<br>• Настройка публикации в ghcr.io<br>• Конфигурация triggers<br>• Создание инструкций по настройке permissions<br>• Добавление badges статуса сборки | |
 | **D-SP-3** | Развертывание на сервер | 📋 Планируется | Создать пошаговую инструкцию для ручного развертывания приложения на удаленном сервере с готовым Docker окружением | • Пошаговая инструкция manual deploy<br>• SSH подключение с использованием ключа<br>• Копирование конфигурации на сервер<br>• Загрузка и запуск образов<br>• Скрипты проверки работоспособности | |
 | **D-SP-4** | Auto Deploy | 📋 Планируется | Автоматическое развертывание на сервер через GitHub Actions по ручному запуску (workflow_dispatch) | • Создание workflow для деплоя<br>• SSH автоматизация через Actions<br>• Pull и restart сервисов<br>• Настройка GitHub secrets<br>• Уведомления о статусе деплоя | |
@@ -33,10 +33,16 @@
 
 ## Описание спринтов
 
-### D-SP-1: Basic Docker Setup (📋 Планируется)
+### D-SP-1: Basic Docker Setup (✅ Завершено)
 
 **Цель:**
 Запустить все сервисы локально через docker-compose одной командой. Это MVP контейнеризация для быстрого старта разработки и обеспечения консистентности окружения.
+
+**📄 Документация:**
+- [План реализации](plans/d-sp-1-implementation.md)
+- [Итоговый отчет](../../SPRINT_D-SP-1_SUMMARY.md)
+- [Инструкция по верификации](../../SPRINT_D-SP-1_VERIFICATION.md)
+- [Quick Start Guide](../../DOCKER_QUICKSTART.md)
 
 **Ключевые задачи:**
 1. **Dockerfile для Bot** - Контейнеризация Telegram бота (Python + UV)
@@ -55,6 +61,24 @@
 - Настроенный SQLite volume для shared доступа
 - Обновленный README.md с инструкциями
 - Работающий запуск через `docker-compose up`
+
+**✅ Фактические результаты (18.10.2025):**
+- ✅ Созданы Dockerfile.bot, Dockerfile.api, frontend/Dockerfile.frontend
+- ✅ docker-compose.yml с 3 сервисами (Bot, API, Frontend) + shared volumes
+- ✅ .dockerignore и frontend/.dockerignore
+- ✅ SQLite настроен с WAL mode и shared volume (data/, logs/)
+- ✅ Обновлен README.md с разделом "Быстрый старт через Docker"
+- ✅ Полностью рабочий запуск через `docker-compose up`
+- ✅ API Health check endpoint
+- ✅ Автоматические миграции Alembic при старте
+- ✅ Все сервисы работают в Docker bridge network
+- ✅ Dashboard работает с SSR (исправлена проблема SSG)
+- ✅ Создана полная документация (Quick Start, Troubleshooting, Test Instructions)
+
+**🐛 Решенные проблемы:**
+1. **Next.js Static Generation** - Страница `/dashboard` кэшировалась с ошибкой при build-time. Решение: `export const dynamic = "force-dynamic"` для SSR
+2. **SQLite Multi-process Access** - Настроен timeout=30s и check_same_thread=False
+3. **system_prompt.txt** - Добавлен в Dockerfile.api (изначально отсутствовал)
 
 ---
 

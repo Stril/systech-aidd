@@ -29,10 +29,9 @@ env
 logs/
 *.log
 
-# Database
-data/
+# Database (НЕ исключать *.db-wal и *.db-shm для WAL mode!)
+# data/ - закомментировано, чтобы volume работал правильно
 *.db
-*.db-*
 
 # Testing
 .pytest_cache

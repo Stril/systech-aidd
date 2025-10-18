@@ -22,7 +22,14 @@ class SQLiteStorage:
         Args:
             database_url: Database connection string (e.g. sqlite+aiosqlite:///data/bot.db)
         """
-        self._engine = create_async_engine(database_url, echo=False)
+        self._engine = create_async_engine(
+            database_url,
+            echo=False,
+            connect_args={
+                "timeout": 30.0,  # Увеличенный timeout для избежания "database is locked"
+                "check_same_thread": False,  # Для async работы
+            },
+        )
         self._session_maker = async_sessionmaker(
             self._engine, class_=AsyncSession, expire_on_commit=False
         )
