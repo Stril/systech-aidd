@@ -10,7 +10,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ - commented out to allow frontend/src/lib/
+# Use specific paths instead:
+.venv/lib/
 lib64/
 parts/
 sdist/
