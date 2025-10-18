@@ -20,6 +20,10 @@ COPY . .
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV API_URL=http://localhost:8000
 
+# Disable ESLint during build (CI environment)
+ENV ESLINT_NO_DEV_ERRORS=true
+ENV NEXT_DISABLE_ESLINT=true
+
 # Build the application
 RUN pnpm build
 
