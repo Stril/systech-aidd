@@ -88,3 +88,6 @@ coverage/
 # Build
 dist/
 build/
+
+# Docker
+docker-compose.override.yml

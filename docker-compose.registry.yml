@@ -1,23 +1,13 @@
-# Docker Compose для локальной разработки и развертывания
-#
-# Режимы работы:
-#
-# 1. Локальная сборка (по умолчанию):
-#    docker-compose up --build
-#
-# 2. Использование образов из GitHub Container Registry:
-#    docker-compose -f docker-compose.registry.yml up
-#
-# 3. Override для постоянного использования registry (не коммитить):
-#    cp docker-compose.override.yml.example docker-compose.override.yml
-#    # Отредактировать <owner> на ваш GitHub username
-#    docker-compose up
+# Docker Compose для использования образов из GitHub Container Registry
+# 
+# Использование:
+#   docker-compose -f docker-compose.registry.yml up -d
+# 
+# Примечание: Замените <owner> на ваш GitHub username/organization
 
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
+    image: ghcr.io/<owner>/systech-aidd-1-api:latest
     container_name: aidd-api
     restart: unless-stopped
     env_file: .env
@@ -36,9 +26,7 @@ services:
       start_period: 40s
 
   bot:
-    build:
-      context: .
-      dockerfile: Dockerfile.bot
+    image: ghcr.io/<owner>/systech-aidd-1-bot:latest
     container_name: aidd-bot
     restart: unless-stopped
     env_file: .env
@@ -52,9 +40,7 @@ services:
       - aidd-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.frontend
+    image: ghcr.io/<owner>/systech-aidd-1-frontend:latest
     container_name: aidd-frontend
     restart: unless-stopped
     environment:
@@ -70,3 +56,4 @@ services:
 networks:
   aidd-network:
     driver: bridge
+

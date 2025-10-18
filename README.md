@@ -1,5 +1,7 @@
 # 🤖 LLM Telegram Bot Assistant
 
+![Build Status](https://github.com/a.v.strila/systech-aidd-1/actions/workflows/build.yml/badge.svg)
+
 Telegram-бот с интеграцией LLM для помощи в различных задачах. Разработан с принципом KISS (Keep It Simple, Stupid) и следует строгой архитектуре 1 класс = 1 файл.
 
 ## 📋 Возможности
@@ -80,6 +82,28 @@ docker-compose restart        # Перезапуск
 ```
 
 📖 **Подробная документация:** [devops/doc/guides/docker-setup.md](devops/doc/guides/docker-setup.md)
+
+### Использование готовых образов из GitHub Container Registry
+
+Если вы не хотите собирать образы локально, можете использовать готовые образы из ghcr.io:
+
+```bash
+# Использование latest образов из registry
+docker-compose -f docker-compose.registry.yml pull
+docker-compose -f docker-compose.registry.yml up -d
+
+# Указание конкретной версии (commit SHA)
+docker pull ghcr.io/<owner>/systech-aidd-1-bot:sha-abc1234
+```
+
+**Преимущества:**
+- ✅ Не нужно собирать образы локально (экономия времени)
+- ✅ Всегда актуальные stable версии
+- ✅ Образы доступны публично, авторизация не требуется
+
+**Примечание:** Замените `<owner>` в `docker-compose.registry.yml` на GitHub username владельца репозитория.
+
+📖 **Подробнее:** [Настройка GitHub Container Registry](devops/doc/guides/github-registry-setup.md)
 
 ---
 
