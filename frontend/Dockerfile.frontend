@@ -16,6 +16,10 @@ RUN pnpm install --frozen-lockfile
 # Copy application code
 COPY . .
 
+# Set build-time environment variables
+ENV NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV API_URL=http://localhost:8000
+
 # Build the application
 RUN pnpm build
 
