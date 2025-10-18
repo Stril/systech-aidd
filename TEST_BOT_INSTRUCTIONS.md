@@ -1,8 +1,10 @@
 # 🤖 Инструкции по тестированию Telegram бота
 
-**Bot Username:** @systech_aidd_strila_bot
-**Bot ID:** 8490425943
+**Bot Username:** @your_bot_username (замените на свой)
+**Bot ID:** YOUR_BOT_ID (получите от @BotFather)
 **Status:** ✅ Active (Polling)
+
+> ⚠️ **Security Notice:** Не указывайте реальные имена ботов и ID в документации!
 
 ---
 

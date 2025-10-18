@@ -39,6 +39,18 @@ Telegram-бот с интеграцией LLM для помощи в разли�
 - **mypy** - статическая типизация в strict mode
 - **Docker + docker-compose** - контейнеризация приложения
 
+## ⚠️ Security Notice
+
+**ВАЖНО! Никогда не коммитьте в Git:**
+- `.env` файлы с реальными токенами и ключами
+- Telegram Bot токены (`TELEGRAM_BOT_TOKEN`)
+- OpenAI/OpenRouter API ключи (`OPENAI_API_KEY`)
+- Реальные имена и ID ботов в документации
+
+Всегда используйте `.env.example` с placeholder значениями для документации.
+
+---
+
 ## 🐳 Быстрый старт через Docker (рекомендуется)
 
 ### Для всех платформ (Windows/macOS/Linux)

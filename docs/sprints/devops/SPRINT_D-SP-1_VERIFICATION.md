@@ -18,7 +18,7 @@
 - ✅ **Bot Container** (`aidd-bot`)
   - Статус: Up
   - Polling: Активен
-  - Подключение к Telegram: Успешно (@systech_aidd_strila_bot)
+  - Подключение к Telegram: Успешно
   - БД подключение: Успешно (4 пользователя, 85 сообщений)
 
 - ✅ **Frontend Container** (`aidd-frontend`)
@@ -33,7 +33,7 @@
 ✅ API Health:    http://localhost:8000/health  → {"status":"ok"}
 ✅ API Docs:      http://localhost:8000/docs    → HTTP 200
 ✅ Frontend:      http://localhost:3000         → HTTP 200
-✅ Bot Telegram:  @systech_aidd_strila_bot      → Polling active
+✅ Bot Telegram:  Your bot                      → Polling active
 ```
 
 ### ✅ База данных
@@ -113,7 +113,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 **Bot логи:**
 ```
 INFO|telegram_bot|status=initialized
-INFO|Run polling for bot @systech_aidd_strila_bot
+INFO|Run polling for bot @your_bot_username
 ```
 **Результат:** ✅ Bot подключен к Telegram
 
@@ -137,7 +137,7 @@ INFO|Run polling for bot @systech_aidd_strila_bot
 - **Результат:** ✅ HTTP 200 (Next.js приложение доступно)
 
 **Тест 3: Telegram Bot**
-- Bot: @systech_aidd_strila_bot
+- Bot: @your_bot_username (ваш бот из .env)
 - **Результат:** ✅ Polling активен, готов к приему сообщений
 
 ---
