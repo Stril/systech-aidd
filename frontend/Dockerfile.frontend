@@ -1,0 +1,40 @@
+# Simplified single-stage Dockerfile for Next.js
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@latest
+
+# Copy package files first
+COPY package.json pnpm-lock.yaml ./
+
+# Install ALL dependencies (including dev for build)
+RUN pnpm install --no-frozen-lockfile
+
+# Copy all application code
+COPY . .
+
+# Set environment variables
+ENV NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build with maximum output
+RUN set -x && \
+    echo "=== Environment ===" && \
+    env | grep -E "NODE|NEXT" && \
+    echo "=== PWD ===" && \
+    pwd && \
+    echo "=== Files ===" && \
+    ls -la && \
+    echo "=== Source files ===" && \
+    ls -la src/ || true && \
+    echo "=== Building ===" && \
+    pnpm run build
+
+# Expose port
+EXPOSE 3000
+
+# Start server
+CMD ["pnpm", "start"]

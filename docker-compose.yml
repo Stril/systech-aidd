@@ -1,0 +1,72 @@
+# Docker Compose для локальной разработки и развертывания
+#
+# Режимы работы:
+#
+# 1. Локальная сборка (по умолчанию):
+#    docker-compose up --build
+#
+# 2. Использование образов из GitHub Container Registry:
+#    docker-compose -f docker-compose.registry.yml up
+#
+# 3. Override для постоянного использования registry (не коммитить):
+#    cp docker-compose.override.yml.example docker-compose.override.yml
+#    # Отредактировать <owner> на ваш GitHub username
+#    docker-compose up
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: aidd-api
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - aidd-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    container_name: aidd-bot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - aidd-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: aidd-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000  # For browser (client-side)
+      - API_URL=http://api:8000                     # For SSR (server-side in Docker)
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - aidd-network
+
+networks:
+  aidd-network:
+    driver: bridge

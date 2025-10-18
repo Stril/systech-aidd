@@ -68,3 +68,50 @@ setup:
 	uv sync --all-extras
 	@echo "✅ Виртуальное окружение создано и зависимости установлены"
 
+# Запуск API сервера
+api-run:
+	uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Открыть API документацию
+api-docs:
+	@echo "API docs available at http://localhost:8000/docs"
+	@echo "ReDoc available at http://localhost:8000/redoc"
+
+# Тестовый запрос к API (day)
+api-test:
+	@echo "Testing /api/stats?period=day..."
+	@curl -s "http://localhost:8000/api/stats?period=day" | python -m json.tool
+	@echo "\n\nTesting /api/stats?period=week..."
+	@curl -s "http://localhost:8000/api/stats?period=week" | python -m json.tool
+
+# Frontend commands
+frontend-install:
+	cd frontend && pnpm install
+
+frontend-dev:
+	cd frontend && pnpm dev
+
+frontend-build:
+	cd frontend && pnpm build
+
+frontend-lint:
+	cd frontend && pnpm lint
+
+frontend-type-check:
+	cd frontend && pnpm tsc --noEmit
+
+frontend-format:
+	cd frontend && pnpm format
+
+frontend-test:
+	cd frontend && pnpm test
+
+frontend-test-watch:
+	cd frontend && pnpm test:watch
+
+frontend-test-coverage:
+	cd frontend && pnpm test:coverage
+
+frontend-quality: frontend-lint frontend-type-check frontend-test
+	@echo "✅ Frontend quality checks passed"
+

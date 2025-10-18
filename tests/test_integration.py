@@ -53,7 +53,7 @@ async def test_full_message_flow():
     assert context[1]["content"] == "Hello! How can I help you?"
 
     # Verify storage has both messages
-    conversation = storage.get_conversation(12345)
+    conversation = await storage.get_conversation(12345)
     assert conversation is not None
     assert len(conversation.messages) == 2
     assert conversation.messages[0].role == "user"
@@ -87,18 +87,30 @@ async def test_reset_clears_all_components():
 
     from src.models import Message as StorageMessage
 
-    storage.add_message_to_conversation(
+    await storage.add_message_to_conversation(
         user_id,
-        StorageMessage(user_id=user_id, role="user", content="Hello", timestamp=datetime.now()),
+        StorageMessage(
+            user_id=user_id,
+            role="user",
+            content="Hello",
+            created_at=datetime.now(),
+            content_length=len("Hello"),
+        ),
     )
-    storage.add_message_to_conversation(
+    await storage.add_message_to_conversation(
         user_id,
-        StorageMessage(user_id=user_id, role="assistant", content="Hi", timestamp=datetime.now()),
+        StorageMessage(
+            user_id=user_id,
+            role="assistant",
+            content="Hi",
+            created_at=datetime.now(),
+            content_length=len("Hi"),
+        ),
     )
 
     # Verify data exists
     assert len(context_manager.get_context(user_id)) == 2
-    conv = storage.get_conversation(user_id)
+    conv = await storage.get_conversation(user_id)
     assert conv is not None
     assert len(conv.messages) == 2
 
@@ -116,7 +128,7 @@ async def test_reset_clears_all_components():
 
     # Verify everything is cleared
     assert len(context_manager.get_context(user_id)) == 0
-    conv = storage.get_conversation(user_id)
+    conv = await storage.get_conversation(user_id)
     assert conv is not None
     assert len(conv.messages) == 0
 
@@ -161,7 +173,7 @@ async def test_llm_error_flow():
     assert context[0]["role"] == "user"
     assert context[0]["content"] == "Hello bot"
 
-    conversation = storage.get_conversation(12345)
+    conversation = await storage.get_conversation(12345)
     assert conversation is not None
     assert len(conversation.messages) == 1
     assert conversation.messages[0].role == "user"
@@ -229,7 +241,7 @@ async def test_multiple_messages_conversation():
     assert context[5]["content"] == "Goodbye!"
 
     # Verify storage has all messages
-    conversation = storage.get_conversation(user_id)
+    conversation = await storage.get_conversation(user_id)
     assert conversation is not None
     assert len(conversation.messages) == 6
 
@@ -262,10 +274,112 @@ async def test_start_command_creates_user_in_storage():
     await handler.handle_start(message)
 
     # Verify user was created in storage
-    assert storage.user_exists(user_id)
+    assert await storage.user_exists(user_id)
     user = storage.get_user(user_id)
     assert user is not None
     assert user.user_id == user_id
     assert user.username == "testuser"
     assert user.first_name == "Test"
     assert user.message_count == 0
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_context_recovery_after_restart():
+    """Test context is restored from database after restart simulation"""
+    # Setup real components
+    context_manager = ContextManager(max_messages=10)
+    storage = MemoryStorage()
+
+    # Mock OpenAI client
+    mock_openai = Mock(spec=OpenAIClient)
+    mock_openai.send_message = AsyncMock(
+        side_effect=[
+            "Response 1",
+            "Response 2",
+            "Response 3 (with restored context)",
+        ]
+    )
+
+    handler = MessageHandler(
+        openai_client=mock_openai,
+        system_prompt="You are a helpful assistant",
+        context_manager=context_manager,
+        storage=storage,
+    )
+
+    user_id = 12345
+
+    # Step 1: Send a few messages before "restart"
+    messages_before_restart = ["Message 1", "Message 2"]
+
+    for user_msg in messages_before_restart:
+        message = AsyncMock()
+        message.from_user = MagicMock()
+        message.from_user.id = user_id
+        message.from_user.username = "testuser"
+        message.from_user.first_name = "Test"
+        message.text = user_msg
+        message.chat.id = user_id
+        message.bot = None
+
+        await handler.handle_text_message(message)
+
+    # Verify context has 4 messages (2 user + 2 assistant)
+    context_before = context_manager.get_context(user_id)
+    assert len(context_before) == 4
+
+    # Verify storage has all messages
+    conversation_before = await storage.get_conversation(user_id)
+    assert conversation_before is not None
+    assert len(conversation_before.messages) == 4
+
+    # Step 2: Simulate app restart by clearing in-memory context
+    context_manager.reset_context(user_id)
+
+    # Verify context is empty (simulates restart)
+    assert len(context_manager.get_context(user_id)) == 0
+
+    # But storage still has messages
+    conversation_after_reset = await storage.get_conversation(user_id)
+    assert conversation_after_reset is not None
+    assert len(conversation_after_reset.messages) == 4
+
+    # Step 3: Send a new message after "restart"
+    message_after_restart = AsyncMock()
+    message_after_restart.from_user = MagicMock()
+    message_after_restart.from_user.id = user_id
+    message_after_restart.from_user.username = "testuser"
+    message_after_restart.from_user.first_name = "Test"
+    message_after_restart.text = "Message 3 after restart"
+    message_after_restart.chat.id = user_id
+    message_after_restart.bot = None
+
+    await handler.handle_text_message(message_after_restart)
+
+    # Step 4: Verify context was restored from database
+    context_after = context_manager.get_context(user_id)
+
+    # Should have 6 messages: 4 restored + 1 new user + 1 new assistant
+    assert len(context_after) == 6
+
+    # Verify restored messages
+    assert context_after[0]["role"] == "user"
+    assert context_after[0]["content"] == "Message 1"
+    assert context_after[1]["role"] == "assistant"
+    assert context_after[1]["content"] == "Response 1"
+    assert context_after[2]["role"] == "user"
+    assert context_after[2]["content"] == "Message 2"
+    assert context_after[3]["role"] == "assistant"
+    assert context_after[3]["content"] == "Response 2"
+
+    # Verify new messages
+    assert context_after[4]["role"] == "user"
+    assert context_after[4]["content"] == "Message 3 after restart"
+    assert context_after[5]["role"] == "assistant"
+    assert context_after[5]["content"] == "Response 3 (with restored context)"
+
+    # Verify storage also has all 6 messages
+    final_conversation = await storage.get_conversation(user_id)
+    assert final_conversation is not None
+    assert len(final_conversation.messages) == 6

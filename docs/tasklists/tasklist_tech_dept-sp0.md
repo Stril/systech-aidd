@@ -9,7 +9,7 @@
 | **#3** | Async/Sync + константы | ✅ Завершено | 2025-10-11 | OpenAIClient рефакторинг: создан приватный `_sync_send_message()` и публичный `async send_message()` с `run_in_executor`. MessageHandler обновлен с `await`. Добавлено 2 async теста. Coverage 98.02%. Все 90 тестов passed. `make quality` работает! |
 | **#4** | Расширение тестирования | ✅ Завершено | 2025-10-11 | Добавлены hypothesis 6.140.3, pytest markers. Созданы test_telegram_bot.py (9 тестов), test_context_manager_property.py (7 тестов), test_integration.py (5 тестов). Makefile расширен командами test-unit/integration/property. Coverage 98.02%. Всего 111 тестов passed. `make quality` работает! |
 
-**Легенда статусов:**  
+**Легенда статусов:**
 ⏳ Ожидание | 🔄 В работе | ✅ Завершено | ⚠️ Проблемы | ❌ Отменено
 
 ---

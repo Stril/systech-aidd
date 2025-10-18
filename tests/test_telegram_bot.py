@@ -15,6 +15,7 @@ def mock_message_handler():
     handler.handle_start = AsyncMock()
     handler.handle_help = AsyncMock()
     handler.handle_reset = AsyncMock()
+    handler.handle_profile = AsyncMock()
     handler.handle_text_message = AsyncMock()
     return handler
 
@@ -50,8 +51,8 @@ def test_register_handlers_called_on_init(mock_dispatcher_cls, mock_bot_cls, moc
     # Create bot - should automatically register handlers
     TelegramBot(token="test_token", message_handler=mock_message_handler)
 
-    # Verify message.register was called 5 times (start, help, role, reset, text)
-    assert mock_dp.message.register.call_count == 5
+    # Verify message.register was called 6 times (start, help, role, reset, profile, text)
+    assert mock_dp.message.register.call_count == 6
 
 
 @pytest.mark.unit
@@ -117,6 +118,21 @@ def test_register_reset_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_
 @pytest.mark.unit
 @patch("src.telegram_bot.Bot")
 @patch("src.telegram_bot.Dispatcher")
+def test_register_profile_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_handler):
+    """Test /profile command handler registration"""
+    mock_dp = MagicMock()
+    mock_dispatcher_cls.return_value = mock_dp
+
+    TelegramBot(token="test_token", message_handler=mock_message_handler)
+
+    # Get fifth register call (should be /profile)
+    fifth_call = mock_dp.message.register.call_args_list[4]
+    assert fifth_call[0][0] == mock_message_handler.handle_profile
+
+
+@pytest.mark.unit
+@patch("src.telegram_bot.Bot")
+@patch("src.telegram_bot.Dispatcher")
 def test_register_text_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_handler):
     """Test text message handler registration"""
     mock_dp = MagicMock()
@@ -124,9 +140,9 @@ def test_register_text_handler(mock_dispatcher_cls, mock_bot_cls, mock_message_h
 
     TelegramBot(token="test_token", message_handler=mock_message_handler)
 
-    # Get fifth register call (should be text messages)
-    fifth_call = mock_dp.message.register.call_args_list[4]
-    assert fifth_call[0][0] == mock_message_handler.handle_text_message
+    # Get sixth register call (should be text messages)
+    sixth_call = mock_dp.message.register.call_args_list[5]
+    assert sixth_call[0][0] == mock_message_handler.handle_text_message
 
 
 @pytest.mark.unit

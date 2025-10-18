@@ -43,10 +43,15 @@ class TelegramBot:
         # Register /reset command
         self._dp.message.register(self._message_handler.handle_reset, Command(commands=["reset"]))
 
+        # Register /profile command
+        self._dp.message.register(
+            self._message_handler.handle_profile, Command(commands=["profile"])
+        )
+
         # Register handler for all text messages (not commands)
         self._dp.message.register(self._message_handler.handle_text_message)
 
-        logger.info("telegram_bot|handlers=registered|count=5")
+        logger.info("telegram_bot|handlers=registered|count=6")
 
     async def start(self) -> None:
         """Start bot polling"""

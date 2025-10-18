@@ -18,7 +18,7 @@ class MemoryStorage:
 
     # User operations
 
-    def add_user(self, user: User) -> None:
+    async def add_user(self, user: User) -> None:
         """
         Add or update user
 
@@ -49,7 +49,7 @@ class MemoryStorage:
         logger.info(f"memory_storage|get_user|user_id={user_id}|found={user is not None}")
         return user
 
-    def user_exists(self, user_id: int) -> bool:
+    async def user_exists(self, user_id: int) -> bool:
         """
         Check if user exists
 
@@ -74,7 +74,7 @@ class MemoryStorage:
         logger.info(f"memory_storage|get_all_users|count={len(users)}")
         return users
 
-    def increment_user_message_count(self, user_id: int) -> None:
+    async def increment_user_message_count(self, user_id: int) -> None:
         """
         Increment user's message count
 
@@ -90,7 +90,7 @@ class MemoryStorage:
 
     # Conversation operations
 
-    def add_message_to_conversation(self, user_id: int, message: Message) -> None:
+    async def add_message_to_conversation(self, user_id: int, message: Message) -> None:
         """
         Add message to user's conversation
 
@@ -109,7 +109,7 @@ class MemoryStorage:
             f"total_messages={self._conversations[user_id].get_message_count()}"
         )
 
-    def get_conversation(self, user_id: int) -> Conversation | None:
+    async def get_conversation(self, user_id: int) -> Conversation | None:
         """
         Get user's conversation
 
@@ -128,7 +128,7 @@ class MemoryStorage:
         )
         return conversation
 
-    def clear_conversation(self, user_id: int) -> None:
+    async def clear_conversation(self, user_id: int) -> None:
         """
         Clear user's conversation
 

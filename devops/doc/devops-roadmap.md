@@ -1,0 +1,179 @@
+# 🚀 Roadmap DevOps - Контейнеризация и CI/CD
+
+> **Основные документы проекта:**
+> - [💡 Идея проекта](../../docs/idea.md) - концепция и описание продукта
+> - [🎯 Техническое видение](../../docs/vision.md) - архитектура и технологии backend
+> - [🗺️ Основной Roadmap](../../docs/roadmap.md) - roadmap backend части проекта
+> - [🎨 Frontend Roadmap](../../frontend/doc/frontend-roadmap.md) - roadmap frontend части проекта
+
+---
+
+## Легенда статусов
+
+| Статус | Описание |
+|--------|----------|
+| 📋 Планируется | Спринт в планах, работа не начата |
+| 🔄 В работе | Спринт активно выполняется |
+| ✅ Завершено | Спринт успешно завершен |
+| ⏸️ Приостановлено | Спринт временно приостановлен |
+| ❌ Отменено | Спринт отменен |
+
+---
+
+## Таблица спринтов
+
+| Код | Название | Статус | Цель и описание | Состав работ | План |
+|-----|----------|--------|-----------------|--------------|------|
+| **D-SP-1** | Basic Docker Setup | ✅ Завершено | Запустить все сервисы локально через docker-compose одной командой. MVP контейнеризация для быстрого старта разработки | • Создание Dockerfile для каждого сервиса<br>• Настройка docker-compose.yml<br>• Конфигурация .dockerignore<br>• Настройка SQLite volume<br>• Тестирование локального запуска | [План реализации](plans/d-sp-1-implementation.md) |
+| **D-SP-2** | Build & Publish | 🔄 В работе | Автоматическая сборка и публикация Docker образов в GitHub Container Registry при push в main ветку | • Создание GitHub Actions workflow для сборки<br>• Настройка публикации в ghcr.io<br>• Конфигурация triggers<br>• Создание инструкций по настройке permissions<br>• Добавление badges статуса сборки | [План реализации](plans/d-sp-2-implementation.md) |
+| **D-SP-3** | Развертывание на сервер | 📋 Планируется | Создать пошаговую инструкцию для ручного развертывания приложения на удаленном сервере с готовым Docker окружением | • Пошаговая инструкция manual deploy<br>• SSH подключение с использованием ключа<br>• Копирование конфигурации на сервер<br>• Загрузка и запуск образов<br>• Скрипты проверки работоспособности | |
+| **D-SP-4** | Auto Deploy | 📋 Планируется | Автоматическое развертывание на сервер через GitHub Actions по ручному запуску (workflow_dispatch) | • Создание workflow для деплоя<br>• SSH автоматизация через Actions<br>• Pull и restart сервисов<br>• Настройка GitHub secrets<br>• Уведомления о статусе деплоя | |
+
+---
+
+## Описание спринтов
+
+### D-SP-1: Basic Docker Setup (✅ Завершено)
+
+**Цель:**
+Запустить все сервисы локально через docker-compose одной командой. Это MVP контейнеризация для быстрого старта разработки и обеспечения консистентности окружения.
+
+**📄 Документация:**
+- [План реализации](plans/d-sp-1-implementation.md)
+- [Итоговый отчет](../../SPRINT_D-SP-1_SUMMARY.md)
+- [Инструкция по верификации](../../SPRINT_D-SP-1_VERIFICATION.md)
+- [Quick Start Guide](../../DOCKER_QUICKSTART.md)
+
+**Ключевые задачи:**
+1. **Dockerfile для Bot** - Контейнеризация Telegram бота (Python + UV)
+2. **Dockerfile для API** - Контейнеризация FastAPI сервиса (Python + UV)
+3. **Dockerfile для Frontend** - Контейнеризация Next.js приложения (pnpm)
+4. **docker-compose.yml** - Оркестрация всех сервисов (Bot, API, Frontend + SQLite volume)
+5. **.dockerignore** - Исключение ненужных файлов из контекста сборки
+6. **SQLite volume** - Настройка общего доступа к файловой БД для всех сервисов
+7. **Тестирование** - Проверка локального запуска через `docker-compose up`
+8. **Документация** - Обновление README с инструкциями по запуску
+
+**Ожидаемые результаты:**
+- Dockerfile.bot, Dockerfile.api, Dockerfile.frontend
+- docker-compose.yml с 4 сервисами
+- .dockerignore для каждого сервиса
+- Настроенный SQLite volume для shared доступа
+- Обновленный README.md с инструкциями
+- Работающий запуск через `docker-compose up`
+
+**✅ Фактические результаты (18.10.2025):**
+- ✅ Созданы Dockerfile.bot, Dockerfile.api, frontend/Dockerfile.frontend
+- ✅ docker-compose.yml с 3 сервисами (Bot, API, Frontend) + shared volumes
+- ✅ .dockerignore и frontend/.dockerignore
+- ✅ SQLite настроен с WAL mode и shared volume (data/, logs/)
+- ✅ Обновлен README.md с разделом "Быстрый старт через Docker"
+- ✅ Полностью рабочий запуск через `docker-compose up`
+- ✅ API Health check endpoint
+- ✅ Автоматические миграции Alembic при старте
+- ✅ Все сервисы работают в Docker bridge network
+- ✅ Dashboard работает с SSR (исправлена проблема SSG)
+- ✅ Создана полная документация (Quick Start, Troubleshooting, Test Instructions)
+
+**🐛 Решенные проблемы:**
+1. **Next.js Static Generation** - Страница `/dashboard` кэшировалась с ошибкой при build-time. Решение: `export const dynamic = "force-dynamic"` для SSR
+2. **SQLite Multi-process Access** - Настроен timeout=30s и check_same_thread=False
+3. **system_prompt.txt** - Добавлен в Dockerfile.api (изначально отсутствовал)
+
+---
+
+### D-SP-2: Build & Publish (📋 Планируется)
+
+**Цель:**
+Автоматическая сборка и публикация Docker образов в GitHub Container Registry при каждом push в main ветку. Это обеспечивает актуальные образы для развертывания.
+
+**Ключевые задачи:**
+1. **GitHub Actions workflow** - Создание .github/workflows/build.yml
+2. **Trigger настройка** - Push в main ветку запускает сборку
+3. **Multi-stage builds** - Сборка 3 образов (bot, api, frontend)
+4. **Публикация в ghcr.io** - Push образов с тегом latest
+5. **SQLite handling** - Учет работы с файловой БД в образах
+6. **Permissions setup** - Инструкция по настройке GitHub Container Registry
+7. **Status badges** - Добавление badges статуса сборки в README
+
+**Ожидаемые результаты:**
+- .github/workflows/build.yml
+- devops/doc/guides/github-registry-setup.md
+- Автоматическая публикация образов в ghcr.io
+- Обновленный README.md с badges
+- Рабочий CI pipeline для сборки
+
+---
+
+### D-SP-3: Развертывание на сервер (📋 Планируется)
+
+**Цель:**
+Создать детальную пошаговую инструкцию для ручного развертывания приложения на удаленном сервере. Это позволит понять процесс деплоя перед его автоматизацией.
+
+**Контекст:**
+Готовый сервер предоставлен (адрес + SSH ключ, Docker уже установлен).
+
+**Ключевые задачи:**
+1. **Manual deploy инструкция** - Детальная пошаговая инструкция
+2. **SSH подключение** - Настройка и использование SSH ключа
+3. **Копирование конфигурации** - Перенос docker-compose.yml и .env на сервер
+4. **Docker login** - Авторизация в ghcr.io на сервере
+5. **Pull образов** - Загрузка образов через docker-compose pull
+6. **Запуск сервисов** - docker-compose up -d
+7. **Миграции БД** - Запуск alembic миграций
+8. **Health checks** - Скрипт проверки работоспособности
+
+**Ожидаемые результаты:**
+- devops/doc/guides/manual-deploy.md (пошаговая инструкция)
+- .env.production (шаблон для production окружения)
+- devops/scripts/deploy-check.sh (скрипт проверки)
+- Проверенный процесс деплоя на реальном сервере
+
+---
+
+### D-SP-4: Auto Deploy (📋 Планируется)
+
+**Цель:**
+Автоматическое развертывание на сервер через GitHub Actions по ручному запуску. Это финальный шаг MVP DevOps pipeline - деплой по кнопке.
+
+**Ключевые задачи:**
+1. **Deploy workflow** - Создание .github/workflows/deploy.yml
+2. **Manual trigger** - Запуск через workflow_dispatch (кнопка в GitHub UI)
+3. **SSH автоматизация** - Подключение к серверу через GitHub Actions
+4. **Pull новых образов** - Загрузка обновленных версий
+5. **Restart сервисов** - Перезапуск через docker-compose
+6. **GitHub secrets** - Инструкция по настройке SSH_KEY, HOST, USER
+7. **Уведомления** - Статус деплоя в Actions UI
+8. **Rollback план** - Базовая стратегия отката при неудаче
+
+**Ожидаемые результаты:**
+- .github/workflows/deploy.yml
+- devops/doc/guides/auto-deploy-setup.md (настройка secrets)
+- Работающий автодеплой по кнопке
+- Обновленный README.md с кнопкой "Deploy"
+- Документация по rollback процедуре
+
+---
+
+## MVP Подход
+
+Этот roadmap следует MVP принципам:
+- **Простота превыше сложности** - никакой Kubernetes, Helm charts, сложных CI/CD пайплайнов
+- **Скорость доставки** - от локального Docker до автодеплоя за 4 спринта
+- **Ручная проверка перед автоматизацией** - сначала manual deploy (D-SP-3), потом auto deploy (D-SP-4)
+- **Инкрементальный подход** - каждый спринт добавляет одну новую возможность
+- **Реальная польза** - каждый спринт дает работающий результат
+
+## Следующие шаги
+
+После завершения DevOps roadmap проект будет иметь:
+- Локальный запуск всех сервисов через `docker-compose up`
+- Автоматическую сборку и публикацию образов при push в main
+- Проверенный процесс ручного развертывания на сервер
+- Автоматический деплой по кнопке через GitHub Actions
+- Документацию для всех процессов
+
+Каждый спринт будет планироваться детально в режиме Plan Mode. После выполнения спринта в таблицу будет добавлена ссылка на план реализации в директории `devops/doc/plans/`.
+
+Новые спринты могут быть добавлены по мере развития проекта и появления новых требований (мониторинг, логирование, backup, security и т.д.).
+

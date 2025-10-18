@@ -16,7 +16,8 @@ class BotMessages:
         "/start - Начать работу с ботом\n"
         "/help - Показать эту справку\n"
         "/role - Показать текущую роль ассистента\n"
-        "/reset - Очистить историю диалога\n\n"
+        "/reset - Очистить историю диалога\n"
+        "/profile - Показать ваш профиль\n\n"
         "Просто отправьте мне сообщение, и я постараюсь помочь!"
     )
 
@@ -24,6 +25,20 @@ class BotMessages:
     RESET_NO_CONTEXT = "⚠️ Управление контекстом не настроено."
 
     ROLE_INFO = "🎭 Текущая роль ассистента:\n\n{role_description}"
+
+    PROFILE_INFO = (
+        "👤 Ваш профиль:\n\n"
+        "🆔 ID: {user_id}\n"
+        "👤 Имя: {first_name}\n"
+        "👤 Фамилия: {last_name}\n"
+        "📝 Username: {username}\n"
+        "🌐 Язык: {language_code}\n"
+        "📊 Сообщений: {message_count}\n"
+        "📅 Регистрация: {created_at}"
+    )
+
+    PROFILE_NOT_FOUND = "❌ Профиль не найден. Используйте /start для регистрации."
+    PROFILE_UNAVAILABLE = "❌ Профиль недоступен."
 
     # Error messages
     NO_LLM = "LLM не настроен. Обратитесь к администратору."

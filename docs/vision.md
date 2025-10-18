@@ -70,8 +70,8 @@ systech-aidd-1/
 ├── docs/
 │   ├── idea.md
 │   ├── vision.md
-│   ├── tasklist.md              # План основной разработки
-│   └── tasklist_tech_dept.md    # План устранения технического долга
+│   ├── roadmap.md               # Roadmap проекта со спринтами
+│   └── tasklists/               # Тасклисты спринтов
 ├── .cursor/
 │   └── rules/
 │       ├── conventions.mdc      # Правила разработки

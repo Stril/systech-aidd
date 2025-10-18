@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from typing import Protocol
 
 from aiogram.types import Message
 
@@ -13,12 +14,30 @@ from src.exceptions import (
     LLMRateLimitError,
     LLMTimeoutError,
 )
-from src.memory_storage import MemoryStorage
 from src.message_extractor import MessageExtractor
 from src.messages import BotMessages
+from src.models import Conversation, User
 from src.models import Message as StorageMessage
-from src.models import User
 from src.openai_client import OpenAIClient
+
+
+class Storage(Protocol):
+    """Protocol for storage implementations"""
+
+    async def add_user(self, user: User) -> None: ...
+
+    async def user_exists(self, user_id: int) -> bool: ...
+
+    async def get_user(self, user_id: int) -> User | None: ...
+
+    async def add_message_to_conversation(self, user_id: int, message: StorageMessage) -> None: ...
+
+    async def increment_user_message_count(self, user_id: int) -> None: ...
+
+    async def get_conversation(self, user_id: int) -> Conversation | None: ...
+
+    async def clear_conversation(self, user_id: int) -> None: ...
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +50,7 @@ class MessageHandler:
         openai_client: OpenAIClient | None = None,
         system_prompt: str = "",
         context_manager: ContextManager | None = None,
-        storage: MemoryStorage | None = None,
+        storage: Storage | None = None,
     ):
         """Initialize message handler
 
@@ -44,7 +63,7 @@ class MessageHandler:
         self._openai_client = openai_client
         self._system_prompt = system_prompt
         self._context_manager = context_manager
-        self._storage = storage
+        self._storage: Storage | None = storage
 
     async def handle_start(self, message: Message) -> None:
         """Handle /start command
@@ -58,15 +77,17 @@ class MessageHandler:
 
         # Save user to storage
         if self._storage and ctx.user_id != 0:
-            if not self._storage.user_exists(ctx.user_id):
+            if not await self._storage.user_exists(ctx.user_id):
                 user = User(
                     user_id=ctx.user_id,
                     username=ctx.username if ctx.username != "Unknown" else None,
                     first_name=ctx.first_name,
+                    last_name=ctx.last_name,
+                    language_code=ctx.language_code,
                     created_at=datetime.now(),
                     message_count=0,
                 )
-                self._storage.add_user(user)
+                await self._storage.add_user(user)
 
         await message.answer(BotMessages.WELCOME)
 
@@ -81,6 +102,29 @@ class MessageHandler:
         logger.info(f"user_command|user_id={ctx.user_id}|username={ctx.username}|command=help")
 
         await message.answer(BotMessages.HELP)
+
+    async def _restore_context_if_needed(self, user_id: int) -> None:
+        """
+        Restore context from database if needed (lazy loading)
+
+        Args:
+            user_id: Telegram user ID
+        """
+        if not self._context_manager or not self._storage:
+            return
+
+        current_context = self._context_manager.get_context(user_id)
+
+        # If context is empty - try to load from database
+        if len(current_context) == 0:
+            conversation = await self._storage.get_conversation(user_id)
+            if conversation and conversation.messages:
+                # Convert Message objects to context format
+                context_messages = [
+                    {"role": msg.role, "content": msg.content} for msg in conversation.messages
+                ]
+                self._context_manager.load_context(user_id, context_messages)
+                logger.info(f"context_restored|user_id={user_id}|messages={len(context_messages)}")
 
     async def handle_text_message(self, message: Message) -> None:
         """Handle regular text messages
@@ -98,6 +142,9 @@ class MessageHandler:
             f"user_text_message|user_id={ctx.user_id}|username={ctx.username}|message_length={len(ctx.text)}"
         )
 
+        # Restore context from DB if needed (lazy loading on first message)
+        await self._restore_context_if_needed(ctx.user_id)
+
         # Add user message to context
         if self._context_manager:
             self._context_manager.add_message(ctx.user_id, "user", ctx.text)
@@ -109,10 +156,14 @@ class MessageHandler:
         # Save user message to storage
         if self._storage and ctx.user_id != 0:
             user_msg = StorageMessage(
-                user_id=ctx.user_id, role="user", content=ctx.text, timestamp=datetime.now()
+                user_id=ctx.user_id,
+                role="user",
+                content=ctx.text,
+                created_at=datetime.now(),
+                content_length=len(ctx.text),
             )
-            self._storage.add_message_to_conversation(ctx.user_id, user_msg)
-            self._storage.increment_user_message_count(ctx.user_id)
+            await self._storage.add_message_to_conversation(ctx.user_id, user_msg)
+            await self._storage.increment_user_message_count(ctx.user_id)
 
         try:
             # Send typing action
@@ -132,9 +183,10 @@ class MessageHandler:
                     user_id=ctx.user_id,
                     role="assistant",
                     content=response,
-                    timestamp=datetime.now(),
+                    created_at=datetime.now(),
+                    content_length=len(response),
                 )
-                self._storage.add_message_to_conversation(ctx.user_id, assistant_msg)
+                await self._storage.add_message_to_conversation(ctx.user_id, assistant_msg)
 
             # Send response to user
             await message.answer(response)
@@ -181,7 +233,7 @@ class MessageHandler:
 
         # Clear storage conversation
         if self._storage and ctx.user_id != 0:
-            self._storage.clear_conversation(ctx.user_id)
+            await self._storage.clear_conversation(ctx.user_id)
 
         if self._context_manager or self._storage:
             await message.answer(BotMessages.RESET_SUCCESS)
@@ -204,3 +256,31 @@ class MessageHandler:
         )
 
         await message.answer(role_message)
+
+    async def handle_profile(self, message: Message) -> None:
+        """Handle /profile command - show user data
+
+        Args:
+            message: Incoming Telegram message
+        """
+        ctx = MessageExtractor.extract(message)
+
+        logger.info(f"user_command|user_id={ctx.user_id}|username={ctx.username}|command=profile")
+
+        if self._storage and ctx.user_id != 0:
+            user = await self._storage.get_user(ctx.user_id)
+            if user:
+                profile_msg = BotMessages.PROFILE_INFO.format(
+                    user_id=user.user_id,
+                    first_name=user.first_name or "Не указано",
+                    last_name=user.last_name or "Не указано",
+                    username=user.username or "Не указано",
+                    language_code=user.language_code or "Не указано",
+                    message_count=user.message_count,
+                    created_at=user.created_at.strftime("%d.%m.%Y %H:%M"),
+                )
+                await message.answer(profile_msg)
+            else:
+                await message.answer(BotMessages.PROFILE_NOT_FOUND)
+        else:
+            await message.answer(BotMessages.PROFILE_UNAVAILABLE)

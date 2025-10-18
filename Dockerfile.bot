@@ -1,0 +1,31 @@
+# Simple Dockerfile for Telegram Bot (Python 3.11 + uv)
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install --no-cache-dir uv
+
+# Copy dependency files
+COPY pyproject.toml ./
+
+# Install dependencies (production only)
+RUN uv sync --no-dev
+
+# Copy application code
+COPY src/ /app/src/
+COPY system_prompt.txt /app/system_prompt.txt
+COPY migrations/ /app/migrations/
+COPY alembic.ini /app/alembic.ini
+
+# Create data and logs directories
+RUN mkdir -p /app/data /app/logs
+
+# Set environment
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
+# Run migrations and start bot
+CMD ["sh", "-c", "alembic upgrade head && python -m src.main"]
+

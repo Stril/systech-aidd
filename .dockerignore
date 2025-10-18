@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+dist
+build
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Database (НЕ исключать *.db-wal и *.db-shm для WAL mode!)
+# data/ - закомментировано, чтобы volume работал правильно
+*.db
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.hypothesis
+
+# Environment
+.env
+
+# UV
+.uv
+
+# Documentation
+docs/
+
+# Examples
+examples/
+

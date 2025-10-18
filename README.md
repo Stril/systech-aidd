@@ -1,5 +1,7 @@
 # 🤖 LLM Telegram Bot Assistant
 
+![Build Status](https://github.com/a.v.strila/systech-aidd-1/actions/workflows/build.yml/badge.svg)
+
 Telegram-бот с интеграцией LLM для помощи в различных задачах. Разработан с принципом KISS (Keep It Simple, Stupid) и следует строгой архитектуре 1 класс = 1 файл.
 
 ## 📋 Возможности
@@ -9,8 +11,10 @@ Telegram-бот с интеграцией LLM для помощи в разли�
 - ✅ Обработка текстовых сообщений и генерация ответов
 - ✅ Управление контекстом диалога (помнит последние 10 сообщений)
 - ✅ Команда `/reset` для очистки истории диалога
-- ✅ In-memory хранилище для пользователей и диалогов
-- ✅ Отслеживание метрик (количество пользователей, сообщений)
+- ✅ Персистентное хранилище SQLite для пользователей и диалогов
+- ✅ Soft delete стратегия (deleted_at) для безопасного удаления
+- ✅ Поддержка множественных диалогов на пользователя
+- ✅ Отслеживание метрик (количество пользователей, сообщений, диалогов)
 - ✅ Логирование в файлы по дням (logs/YYYY-MM-DD.log)
 - ✅ Graceful обработка ошибок LLM API (таймауты, лимиты, сетевые ошибки)
 - ✅ Понятные сообщения пользователю при ошибках
@@ -27,13 +31,83 @@ Telegram-бот с интеграцией LLM для помощи в разли�
 - **aiogram 3.x** - Telegram Bot API с polling
 - **openai** - клиент для работы с LLM через OpenRouter
 - **pydantic** - валидация конфигурации
+- **SQLite 3** - встроенная БД для персистентного хранения
+- **SQLAlchemy 2.0+** - async ORM для работы с БД
+- **Alembic** - система миграций базы данных
 
 ### Разработка и качество кода
-- **pytest** - тестирование (pytest-asyncio, pytest-cov, pytest-mock)
+- **pytest** - тестирование (pytest-asyncio, pytest-cov, pytest-mock, hypothesis)
 - **ruff** - быстрый линтер и форматтер кода (замена flake8 + black + isort)
 - **mypy** - статическая типизация в strict mode
+- **Docker + docker-compose** - контейнеризация приложения
 
-## 🚀 Быстрый старт
+## ⚠️ Security Notice
+
+**ВАЖНО! Никогда не коммитьте в Git:**
+- `.env` файлы с реальными токенами и ключами
+- Telegram Bot токены (`TELEGRAM_BOT_TOKEN`)
+- OpenAI/OpenRouter API ключи (`OPENAI_API_KEY`)
+- Реальные имена и ID ботов в документации
+
+Всегда используйте `.env.example` с placeholder значениями для документации.
+
+---
+
+## 🐳 Быстрый старт через Docker (рекомендуется)
+
+### Для всех платформ (Windows/macOS/Linux)
+
+**Требования:** Docker Desktop или Docker Engine с Docker Compose v2+
+
+```bash
+# 1. Создайте .env файл
+cp .env.example .env
+# Отредактируйте .env и заполните токены (TELEGRAM_BOT_TOKEN, OPENAI_API_KEY)
+
+# 2. Запустите все сервисы одной командой
+docker-compose up --build
+
+# 3. Готово! Сервисы доступны:
+#    - Bot: работает в фоне (отправьте сообщение боту в Telegram)
+#    - API: http://localhost:8000/docs
+#    - Frontend: http://localhost:3000
+```
+
+**Управление:**
+```bash
+docker-compose up -d          # Запуск в фоне
+docker-compose logs -f        # Просмотр логов
+docker-compose down           # Остановка
+docker-compose restart        # Перезапуск
+```
+
+📖 **Подробная документация:** [devops/doc/guides/docker-setup.md](devops/doc/guides/docker-setup.md)
+
+### Использование готовых образов из GitHub Container Registry
+
+Если вы не хотите собирать образы локально, можете использовать готовые образы из ghcr.io:
+
+```bash
+# Использование latest образов из registry
+docker-compose -f docker-compose.registry.yml pull
+docker-compose -f docker-compose.registry.yml up -d
+
+# Указание конкретной версии (commit SHA)
+docker pull ghcr.io/<owner>/systech-aidd-1-bot:sha-abc1234
+```
+
+**Преимущества:**
+- ✅ Не нужно собирать образы локально (экономия времени)
+- ✅ Всегда актуальные stable версии
+- ✅ Образы доступны публично, авторизация не требуется
+
+**Примечание:** Замените `<owner>` в `docker-compose.registry.yml` на GitHub username владельца репозитория.
+
+📖 **Подробнее:** [Настройка GitHub Container Registry](devops/doc/guides/github-registry-setup.md)
+
+---
+
+## 🛠️ Альтернатива: Локальный запуск без Docker
 
 ### 1. Предварительные требования
 
@@ -134,7 +208,8 @@ systech-aidd-1/
 ├── docs/
 │   ├── idea.md               # Идея проекта
 │   ├── vision.md             # Техническое видение
-│   └── tasklist.md           # План разработки
+│   ├── roadmap.md            # Roadmap со спринтами
+│   └── tasklists/            # Тасклисты спринтов
 ├── logs/                     # Логи по дням (создается автоматически)
 ├── system_prompt.txt         # Системный промпт (роль ассистента)
 ├── .env.example              # Пример конфигурации
@@ -339,13 +414,25 @@ make test-cov
 
 **Проект завершен!** Все задачи выполнены согласно плану разработки.
 
-Подробный план см. в [docs/tasklist.md](docs/tasklist.md)
+Подробный план см. в [docs/roadmap.md](docs/roadmap.md) (спринт SP-0)
 
 ## 📖 Документация
 
+### Гайды для онбординга
+- **[Guides](docs/guides/)** - Полный набор гайдов для быстрого старта (~3 часа)
+  - [Getting Started](docs/guides/01-getting-started.md) - Установка и запуск (10 мин)
+  - [Quick Tour](docs/guides/02-quick-tour.md) - Обзор возможностей (15 мин)
+  - [Architecture Overview](docs/guides/03-architecture-overview.md) - Архитектура с диаграммами (20 мин)
+  - [Codebase Tour](docs/guides/04-codebase-tour.md) - Тур по коду (20 мин)
+  - [Development Workflow](docs/guides/08-development-workflow.md) - Процесс разработки (30 мин)
+  - [Testing Guide](docs/guides/09-testing-guide.md) - Гайд по тестированию (30 мин)
+
+### Основная документация
 - [idea.md](docs/idea.md) - Исходная идея проекта
 - [vision.md](docs/vision.md) - Техническое видение и архитектура
-- [tasklist.md](docs/tasklist.md) - Детальный план разработки по итерациям
+- [roadmap.md](docs/roadmap.md) - Roadmap проекта со спринтами
+- [tasklists/](docs/tasklists/) - Детальные планы по спринтам
+- [ADRs](docs/adrs/) - Архитектурные решения (7 документов)
 
 ## 🤝 Вклад в разработку
 
@@ -405,6 +492,100 @@ git commit -m "feat: описание изменений"
 
 ### Подробная документация:
 См. [.vscode/README.md](.vscode/README.md) для детального руководства по всем возможностям.
+
+## 💾 База данных
+
+Проект использует **SQLite** для персистентного хранения пользователей, диалогов и сообщений.
+
+### Структура БД
+
+- **users** - пользователи бота (user_id как PK)
+- **conversations** - диалоги пользователей (множественные на пользователя)
+- **messages** - история сообщений (с deleted_at для soft delete)
+
+### Миграции (Alembic)
+
+```bash
+# Применить все миграции
+alembic upgrade head
+
+# Создать новую миграцию (автоматически)
+alembic revision --autogenerate -m "Description"
+
+# Откатить последнюю миграцию
+alembic downgrade -1
+
+# Показать текущую версию
+alembic current
+
+# Показать историю миграций
+alembic history
+```
+
+### Бэкапы
+
+```bash
+# Создать бэкап БД
+cp data/bot.db backups/bot_$(date +%Y%m%d_%H%M%S).db
+
+# Восстановить из бэкапа
+cp backups/bot_YYYYMMDD_HHMMSS.db data/bot.db
+```
+
+### Расположение
+
+- **Продакшн**: `data/bot.db`
+- **Тесты**: in-memory SQLite (`sqlite+aiosqlite:///:memory:`)
+
+## 🐳 Docker контейнеризация
+
+Проект полностью контейнеризован и поддерживает запуск всех сервисов (Bot, API, Frontend) через Docker Compose.
+
+### Архитектура
+
+- **3 сервиса:** Bot (Telegram), API (FastAPI), Frontend (Next.js)
+- **Shared SQLite:** База данных доступна Bot и API через общий volume
+- **Автоматические миграции:** Применяются при старте контейнеров
+- **Production-ready:** Простые Dockerfile для быстрого MVP
+
+### Быстрый запуск
+
+```bash
+# Создать .env из шаблона
+cp .env.example .env
+
+# Запустить все сервисы
+docker-compose up --build
+
+# В фоновом режиме
+docker-compose up -d
+
+# Просмотр логов
+docker-compose logs -f
+
+# Остановка
+docker-compose down
+```
+
+### Доступность сервисов
+
+- **API Documentation:** http://localhost:8000/docs
+- **Frontend Dashboard:** http://localhost:3000
+- **Bot:** Работает в фоне, пишет логи в `./logs/`
+
+### Volumes
+
+- `./data:/app/data` - SQLite database (персистентность между перезапусками)
+- `./logs:/app/logs` - Логи всех сервисов
+
+### Особенности SQLite в Docker
+
+SQLite настроен для multi-process доступа:
+- WAL (Write-Ahead Logging) mode для параллельного чтения/записи
+- Увеличенный timeout (30s) для избежания "database is locked"
+- Shared volume между Bot и API контейнерами
+
+📖 **Полное руководство:** [devops/doc/guides/docker-setup.md](devops/doc/guides/docker-setup.md)
 
 ## 📄 Лицензия
 

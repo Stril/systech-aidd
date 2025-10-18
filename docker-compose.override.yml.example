@@ -1,0 +1,28 @@
+# Пример override файла для использования образов из GitHub Container Registry
+#
+# Использование:
+#   1. Скопируйте этот файл:
+#      cp docker-compose.override.yml.example docker-compose.override.yml
+#
+#   2. Замените <owner> на ваш GitHub username/organization
+#
+#   3. Запустите docker-compose как обычно:
+#      docker-compose up -d
+#
+# Docker Compose автоматически применит override поверх docker-compose.yml
+#
+# Примечание: docker-compose.override.yml добавлен в .gitignore
+
+services:
+  api:
+    image: ghcr.io/<owner>/systech-aidd-1-api:latest
+    build: ~  # Отключить локальную сборку
+
+  bot:
+    image: ghcr.io/<owner>/systech-aidd-1-bot:latest
+    build: ~  # Отключить локальную сборку
+
+  frontend:
+    image: ghcr.io/<owner>/systech-aidd-1-frontend:latest
+    build: ~  # Отключить локальную сборку
+

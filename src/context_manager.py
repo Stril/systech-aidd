@@ -67,6 +67,25 @@ class ContextManager:
         else:
             logger.info(f"context_manager|reset|user_id={user_id}|no_context_found")
 
+    def load_context(self, user_id: int, messages: list[dict[str, str]]) -> None:
+        """
+        Load context from message list (e.g., from database)
+
+        Args:
+            user_id: Telegram user ID
+            messages: List of messages in format [{"role": "...", "content": "..."}, ...]
+        """
+        # Take only last max_messages
+        limited_messages = messages[-self._max_messages :] if messages else []
+
+        # Set context directly without triggering add_message logic
+        self._contexts[user_id] = limited_messages
+
+        logger.info(
+            f"context_manager|context_loaded|user_id={user_id}|"
+            f"total_messages={len(messages)}|loaded_messages={len(limited_messages)}"
+        )
+
     def _trim_context(self, user_id: int) -> None:
         """
         Trim context to max_messages limit
