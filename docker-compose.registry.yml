@@ -3,11 +3,11 @@
 # Использование:
 #   docker-compose -f docker-compose.registry.yml up -d
 #
-# Примечание: Замените <owner> на ваш GitHub username/organization
+# Примечание: Замените stril на ваш GitHub username/organization
 
 services:
   api:
-    image: ghcr.io/<owner>/systech-aidd-1-api:latest
+    image: ghcr.io/stril/systech-aidd-api:latest
     container_name: aidd-api
     restart: unless-stopped
     env_file: .env
@@ -26,7 +26,7 @@ services:
       start_period: 40s
 
   bot:
-    image: ghcr.io/<owner>/systech-aidd-1-bot:latest
+    image: ghcr.io/stril/systech-aidd-bot:latest
     container_name: aidd-bot
     restart: unless-stopped
     env_file: .env
@@ -40,7 +40,7 @@ services:
       - aidd-network
 
   frontend:
-    image: ghcr.io/<owner>/systech-aidd-1-frontend:latest
+    image: ghcr.io/stril/systech-aidd-frontend:latest
     container_name: aidd-frontend
     restart: unless-stopped
     environment:
