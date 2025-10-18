@@ -19,13 +19,19 @@ COPY . .
 # Set build-time environment variables
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV API_URL=http://localhost:8000
+ENV NODE_ENV=production
 
-# Disable ESLint during build (CI environment)
+# Disable ESLint and telemetry
 ENV ESLINT_NO_DEV_ERRORS=true
 ENV NEXT_DISABLE_ESLINT=true
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the application
-RUN pnpm build
+# Build the application with verbose output
+RUN echo "Starting Next.js build..." && \
+    pnpm build 2>&1 || (echo "Build failed! Checking for common issues..." && \
+    ls -la && \
+    cat next.config.mjs && \
+    exit 1)
 
 # Expose port
 EXPOSE 3000
