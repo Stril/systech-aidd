@@ -1,5 +1,7 @@
 """Unit tests for ChatSessionManager"""
 
+from unittest.mock import Mock
+
 import pytest
 
 from api.chat_session_manager import ChatSessionManager
@@ -8,7 +10,8 @@ from api.chat_session_manager import ChatSessionManager
 @pytest.mark.unit
 def test_create_session() -> None:
     """Test creating a new chat session"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
 
     # Create session
     session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
@@ -26,7 +29,8 @@ def test_create_session() -> None:
 @pytest.mark.unit
 def test_session_context() -> None:
     """Test adding and retrieving session context"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
     session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Initially empty
@@ -49,7 +53,8 @@ def test_session_context() -> None:
 @pytest.mark.unit
 def test_clear_session() -> None:
     """Test clearing a session"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
     session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Add some messages
@@ -65,7 +70,8 @@ def test_clear_session() -> None:
 @pytest.mark.unit
 def test_session_not_found() -> None:
     """Test accessing non-existent session raises error"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
 
     # Should raise KeyError
     with pytest.raises(KeyError):
@@ -81,7 +87,8 @@ def test_session_not_found() -> None:
 @pytest.mark.unit
 def test_context_trimming() -> None:
     """Test that context is trimmed to max_messages"""
-    manager = ChatSessionManager(max_context_messages=3)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=3)
     session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
 
     # Add more messages than max
@@ -98,7 +105,8 @@ def test_context_trimming() -> None:
 @pytest.mark.unit
 def test_multiple_sessions() -> None:
     """Test managing multiple sessions simultaneously"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
 
     # Create multiple sessions
     session1 = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
@@ -121,7 +129,8 @@ def test_multiple_sessions() -> None:
 @pytest.mark.unit
 def test_get_session_user() -> None:
     """Test getting session user information"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
     session_id = manager.create_session(mode="normal", username="User_54321", user_id=-54321)
 
     # Get user info
@@ -135,7 +144,38 @@ def test_get_session_user() -> None:
 @pytest.mark.unit
 def test_get_session_user_not_found() -> None:
     """Test get_session_user raises KeyError for non-existent session"""
-    manager = ChatSessionManager(max_context_messages=5)
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
 
     with pytest.raises(KeyError, match="Session not found"):
         manager.get_session_user("non-existent-id")
+
+
+@pytest.mark.unit
+def test_get_storage() -> None:
+    """Test getting storage instance from session manager"""
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
+
+    # Get storage
+    storage = manager.get_storage()
+
+    # Verify it's the same instance
+    assert storage is mock_storage
+
+
+@pytest.mark.unit
+def test_create_session_initializes_conversation_id_as_none() -> None:
+    """Test that new session has conversation_id initialized as None"""
+    mock_storage = Mock()
+    manager = ChatSessionManager(storage=mock_storage, max_context_messages=5)
+
+    # Create session
+    session_id = manager.create_session(mode="normal", username="User_12345", user_id=-12345)
+
+    # Session should exist and have conversation_id as None
+    assert manager.session_exists(session_id)
+
+    # Access internal session data to verify conversation_id is None
+    session_data = manager._sessions[session_id]
+    assert session_data.conversation_id is None

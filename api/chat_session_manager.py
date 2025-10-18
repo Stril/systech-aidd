@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from src.context_manager import ContextManager
+from src.sqlite_storage import SQLiteStorage
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +20,20 @@ class SessionData:
     created_at: datetime
     username: str
     user_id: int
+    conversation_id: int | None
 
 
 class ChatSessionManager:
     """Manages chat sessions with context history"""
 
-    def __init__(self, max_context_messages: int = 10):
+    def __init__(self, storage: SQLiteStorage, max_context_messages: int = 10):
         """Initialize session manager
 
         Args:
+            storage: SQLite storage for message persistence
             max_context_messages: Maximum number of messages to keep in context
         """
+        self._storage = storage
         self._sessions: dict[str, SessionData] = {}
         self._max_context_messages = max_context_messages
         logger.info(f"chat_session_manager|initialized|max_context={max_context_messages}")
@@ -54,6 +58,7 @@ class ChatSessionManager:
             created_at=datetime.now(),
             username=username,
             user_id=user_id,
+            conversation_id=None,
         )
 
         logger.info(
@@ -163,4 +168,12 @@ class ChatSessionManager:
 
         session = self._sessions[session_id]
         return (session.username, session.user_id)
+
+    def get_storage(self) -> SQLiteStorage:
+        """Get storage instance
+
+        Returns:
+            SQLite storage instance
+        """
+        return self._storage
 

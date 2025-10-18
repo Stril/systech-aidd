@@ -63,7 +63,7 @@ text2sql_handler = Text2SQLHandler(
     text2sql_prompt=settings.text2sql_prompt,
 )
 
-chat_session_manager = ChatSessionManager(max_context_messages=10)
+chat_session_manager = ChatSessionManager(storage=storage, max_context_messages=10)
 
 chat_handler = ChatHandler(
     openai_client=openai_client,

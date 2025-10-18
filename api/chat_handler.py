@@ -1,10 +1,12 @@
 """Chat handler for processing chat requests"""
 
 import logging
+from datetime import datetime
 
 from api.chat_models import ChatResponse
 from api.chat_session_manager import ChatSessionManager
 from api.text2sql_handler import Text2SQLHandler
+from src.models import Message
 from src.openai_client import OpenAIClient
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,9 @@ class ChatHandler:
         # Add user message to session
         self._session_manager.add_message(session_id, "user", message)
 
+        # Persist user message to database
+        await self._save_user_message(user_id, message)
+
         try:
             if mode == "admin":
                 # Admin mode: use text2sql pipeline
@@ -119,4 +124,31 @@ class ChatHandler:
         sql_query, answer = await self._text2sql_handler.process_question(message)
 
         return ChatResponse(content=answer, sql_query=sql_query if sql_query else None)
+
+    async def _save_user_message(self, user_id: int, message_content: str) -> None:
+        """Save user message to database
+
+        Args:
+            user_id: User ID (negative for web users)
+            message_content: Message content from user
+        """
+        # Create domain Message object
+        message = Message(
+            id=None,
+            user_id=user_id,
+            role="user",
+            content=message_content,
+            content_length=len(message_content),
+            created_at=datetime.now(),
+            deleted_at=None,
+        )
+
+        # Get storage from session manager and persist message
+        storage = self._session_manager.get_storage()
+        await storage.add_message_to_conversation(user_id, message)
+
+        logger.info(
+            f"chat_handler|user_message_saved|user_id={user_id}|"
+            f"content_length={len(message_content)}"
+        )
 
